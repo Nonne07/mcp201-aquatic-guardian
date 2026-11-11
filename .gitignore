@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C / C++ Build Artifacts
+*.o
+*.obj
+*.elf
+*.bin
+*.hex
+*.map
+*.d
+
+# STM32CubeIDE & Keil project temporary files
+Debug/
+Release/
+.settings/
+*.launch
+
+# OS Generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Editor temporary directories
+.vscode/
+.idea/
+*.swp
+*.swo
