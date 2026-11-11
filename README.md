@@ -4,7 +4,7 @@
 [![RTOS](https://img.shields.io/badge/RTOS-FreeRTOS%20%2F%20CMSIS--RTOS%20v2-orange.svg)](https://www.freertos.org/)
 [![IoT](https://img.shields.io/badge/IoT-ESP32%20Wi--Fi%20%7C%20Telegram-0088cc.svg?logo=telegram)](https://telegram.org/)
 [![Academic](https://img.shields.io/badge/Course-MCP201%20Capstone-blue.svg)](https://fpt.edu.vn/)
-[![Team](https://img.shields.io/badge/Class-IC2005%20--%20Group%207-green.svg)](#-team-members--responsibilities)
+
 
 > **MCP201 (Microcontroller Programming) — Capstone Project**  
 > **FPT University — Semester 3 — Class: IC2005 — Group 7**  
@@ -184,18 +184,6 @@ mcp201-aquatic-guardian/
    ```bash
    python scripts/aquatic_pc_bridge.py
    ```
-
----
-
-## 👥 Team Members & Responsibilities
-
-| Member | Roster Role | Primary Subsystem | Standalone Test Bench |
-| :--- | :--- | :--- | :--- |
-| **Nghiêm Hoàng Tùng** *(Lead)* | **RTOS Architect** | FreeRTOS 5 Tasks, Length-1 Mailbox, Semaphore & Mutex Concurrency, EXTI Debounce | [`src/aquatic_guardian_app.c`](src/aquatic_guardian_app.c) |
-| **Hoàng Đức Mạnh** | **Sensors & DSP** | Analog TDS Probe (`PA1`), Potentiometer (`PA4`), 20-Sample Ring Filter, Cubic Formula | [`src/standalone_tests/test_tds_filter.c`](src/standalone_tests/test_tds_filter.c) |
-| **Đỗ Khắc Lê Gia** | **Actuators & Power** | SG90 Servo PWM (`PA0`), Tic-Tac Dispenser Mechanism, Relay Coil (`PB4`), MB102 Power Rail | [`src/standalone_tests/test_servo_pwm.c`](src/standalone_tests/test_servo_pwm.c) |
-| **Phạm Hồng Minh** | **I2C Bus & Storage** | Shared I2C1 Bus, LCD2004 PCF8574 Driver, DS3231 RTC BCD Clock, AT24C32 EEPROM Logging | [`src/standalone_tests/test_i2c_scanner.c`](src/standalone_tests/test_i2c_scanner.c) |
-| **Nguyễn Đức Anh** | **IoT & Telemetry** | ESP32 Wi-Fi Co-Processor (`USART1`), Telegram Bot, Web Dashboard, Python PC Backup | [`src/standalone_tests/test_uart_esp32_bridge.c`](src/standalone_tests/test_uart_esp32_bridge.c) |
 
 ---
 
