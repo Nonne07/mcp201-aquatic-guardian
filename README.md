@@ -196,3 +196,4 @@ mcp201-aquatic-guardian/
   * Introduced dual-mode telemetry (ESP32 IoT Bonus + ST-LINK USB Failsafe).
   * Validated genuine **Priority Inheritance** on the shared I2C1 bus between `Task_DispenserControl` and `Task_DisplayUI`.
 * **License**: Open-source educational project for FPT University MCP201 Capstone.
+
