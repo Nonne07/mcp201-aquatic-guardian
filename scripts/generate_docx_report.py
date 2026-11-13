@@ -293,3 +293,4 @@ def process_markdown_table(doc, lines):
 
 if __name__ == '__main__':
     build_report()
+

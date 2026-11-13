@@ -627,3 +627,4 @@ Mã nguồn chương trình Arduino C++ chạy trên module ESP32 xử lý Teleg
 ## PHỤ LỤC C: BẢNG DANH MỤC LINH KIỆN CHI TIẾT (BOM) VÀ THÔNG SỐ KỸ THUẬT
 * Tệp tài liệu chi tiết: [`docs/hardware_bom_shopping_list.md`](file:///E:/AntiGravityRoot/mcp201-aquatic-guardian/docs/hardware_bom_shopping_list.md)
 * Bảng tính theo dõi tiến độ đồ án 8 tab: [`Aquatic_Guardian_Task_Tracker.xlsx`](file:///E:/AntiGravityRoot/mcp201-aquatic-guardian/Aquatic_Guardian_Task_Tracker.xlsx)
+
