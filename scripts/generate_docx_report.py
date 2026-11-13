@@ -5,6 +5,7 @@ Script: generate_docx_report.py
 Purpose: Generates the official Microsoft Word report (.docx) complying
          strictly with '20141225-Huong dan trinh bay DATN.doc'
          and the instructor's reminder ('Lam tu muc luc tro xuong thoi').
+Style:   Professional Monochrome / Colorless Academic Design for Thesis Printing
 =============================================================================
 """
 
@@ -35,8 +36,8 @@ def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
         tcMar.append(node)
     tcPr.append(tcMar)
 
-def set_table_borders(table, color="D0D7DE", sz="4", val="single"):
-    """Applies clean outer border to a table."""
+def set_table_borders(table, color="808080", sz="4", val="single"):
+    """Applies clean outer border to a table in neutral monochrome tone."""
     tblPr = table._tbl.tblPr
     tblBorders = parse_xml(
         f'<w:tblBorders {nsdecls("w")}>\n'
@@ -56,22 +57,48 @@ def add_page_number(run):
     fldSimple.set(qn('w:instr'), 'PAGE')
     run._r.append(fldSimple)
 
+def add_hyperlink(paragraph, url, text, is_code=False, is_bold=False):
+    """Inserts a clickable Word hyperlink in black text with clean underline."""
+    part = paragraph.part
+    r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+    hyperlink = parse_xml(f'<w:hyperlink {nsdecls("w", "r")} r:id="{r_id}" w:history="1"/>')
+    
+    font_name = 'Consolas' if is_code else 'Times New Roman'
+    sz_val = "23" if is_code else "26" # 11.5pt vs 13pt
+    bold_tag = '<w:b/>' if is_bold else ''
+    
+    r_xml = (
+        f'<w:r {nsdecls("w")}>'
+        f'  <w:rPr>'
+        f'    <w:rFonts w:ascii="{font_name}" w:hAnsi="{font_name}"/>'
+        f'    <w:sz w:val="{sz_val}"/>'
+        f'    <w:color w:val="000000"/>'
+        f'    <w:u w:val="single"/>'
+        f'    {bold_tag}'
+        f'  </w:rPr>'
+        f'  <w:t>{text}</w:t>'
+        f'</w:r>'
+    )
+    r = parse_xml(r_xml)
+    hyperlink.append(r)
+    paragraph._p.append(hyperlink)
+
 def add_formula_box(doc, formula_text, eq_number=""):
-    """Inserts a dedicated shaded formula box with right-aligned numbering and professional math typography."""
+    """Inserts a dedicated formula box with right-aligned numbering and monochrome typography."""
     table = doc.add_table(rows=1, cols=2)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
-    set_table_borders(table, color="B0C4DE", sz="6", val="single")
+    set_table_borders(table, color="707070", sz="4", val="single")
 
     # Left cell: Math formula (width ~ 13.2 cm)
     cell_form = table.cell(0, 0)
     cell_form.width = Cm(13.2)
-    set_cell_background(cell_form, "F4F6F9")
-    set_cell_margins(cell_form, top=140, bottom=140, left=180, right=100)
+    set_cell_background(cell_form, "FAFAFA")
+    set_cell_margins(cell_form, top=130, bottom=130, left=180, right=100)
     p_form = cell_form.paragraphs[0]
     p_form.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_form.paragraph_format.space_before = Pt(4)
-    p_form.paragraph_format.space_after = Pt(4)
+    p_form.paragraph_format.space_before = Pt(3)
+    p_form.paragraph_format.space_after = Pt(3)
 
     # Tokenize formula for subscripts, superscripts and regular math symbols
     pattern = re.compile(r'_([a-zA-Z0-9]+|\([^)]+\))|\^([a-zA-Z0-9]+|\([^)]+\))|([^_^\n]+)')
@@ -85,42 +112,42 @@ def add_formula_box(doc, formula_text, eq_number=""):
             r.font.size = Pt(11)
             r.font.italic = True
             r.font.subscript = True
-            r.font.color.rgb = RGBColor(0, 32, 96)
+            r.font.color.rgb = RGBColor(0, 0, 0)
         elif sup_val is not None:
             r = p_form.add_run(sup_val.strip('()'))
             r.font.name = 'Cambria Math'
             r.font.size = Pt(11)
             r.font.italic = True
             r.font.superscript = True
-            r.font.color.rgb = RGBColor(0, 32, 96)
+            r.font.color.rgb = RGBColor(0, 0, 0)
         elif norm_val is not None:
             r = p_form.add_run(norm_val)
             r.font.name = 'Cambria Math'
             r.font.size = Pt(12)
             r.font.italic = True
-            r.font.color.rgb = RGBColor(0, 32, 96)
+            r.font.color.rgb = RGBColor(0, 0, 0)
 
     # Right cell: Equation number (width ~ 2.3 cm)
     cell_num = table.cell(0, 1)
     cell_num.width = Cm(2.3)
-    set_cell_background(cell_num, "F4F6F9")
-    set_cell_margins(cell_num, top=140, bottom=140, left=50, right=180)
+    set_cell_background(cell_num, "FAFAFA")
+    set_cell_margins(cell_num, top=130, bottom=130, left=50, right=180)
     p_num = cell_num.paragraphs[0]
     p_num.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    p_num.paragraph_format.space_before = Pt(4)
-    p_num.paragraph_format.space_after = Pt(4)
+    p_num.paragraph_format.space_before = Pt(3)
+    p_num.paragraph_format.space_after = Pt(3)
     r_num = p_num.add_run(eq_number)
     r_num.font.name = 'Times New Roman'
     r_num.font.size = Pt(12)
     r_num.font.bold = True
-    r_num.font.color.rgb = RGBColor(0, 43, 73)
+    r_num.font.color.rgb = RGBColor(0, 0, 0)
 
     p_spacer = doc.add_paragraph()
     p_spacer.paragraph_format.space_before = Pt(0)
     p_spacer.paragraph_format.space_after = Pt(6)
 
 def add_callout_box(doc, text_lines):
-    """Inserts a styled note / quote callout box."""
+    """Inserts a styled note / quote callout box in clean monochrome style."""
     table = doc.add_table(rows=1, cols=1)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
@@ -129,7 +156,7 @@ def add_callout_box(doc, text_lines):
     tblBorders = parse_xml(
         f'<w:tblBorders {nsdecls("w")}>\n'
         f'  <w:top w:val="none"/>\n'
-        f'  <w:left w:val="single" w:sz="24" w:space="0" w:color="002B49"/>\n'
+        f'  <w:left w:val="single" w:sz="24" w:space="0" w:color="000000"/>\n'
         f'  <w:bottom w:val="none"/>\n'
         f'  <w:right w:val="none"/>\n'
         f'  <w:insideH w:val="none"/>\n'
@@ -140,7 +167,7 @@ def add_callout_box(doc, text_lines):
 
     cell = table.cell(0, 0)
     cell.width = Cm(15.5)
-    set_cell_background(cell, "F0F4F8")
+    set_cell_background(cell, "F7F7F7")
     set_cell_margins(cell, top=140, bottom=140, left=180, right=180)
 
     p = cell.paragraphs[0]
@@ -155,15 +182,15 @@ def add_callout_box(doc, text_lines):
     p_spacer.paragraph_format.space_after = Pt(6)
 
 def add_code_block(doc, code_lines):
-    """Inserts a formatted code/ASCII diagram block."""
+    """Inserts a formatted code/ASCII diagram block in neutral monochrome style."""
     table = doc.add_table(rows=1, cols=1)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
-    set_table_borders(table, color="CCD6E0", sz="4", val="single")
+    set_table_borders(table, color="808080", sz="4", val="single")
 
     cell = table.cell(0, 0)
     cell.width = Cm(15.5)
-    set_cell_background(cell, "F8F9FA")
+    set_cell_background(cell, "FAFAFA")
     set_cell_margins(cell, top=120, bottom=120, left=150, right=150)
 
     p = cell.paragraphs[0]
@@ -175,7 +202,7 @@ def add_code_block(doc, code_lines):
         r = p.add_run(c_line + ("\n" if idx < len(code_lines) - 1 else ""))
         r.font.name = 'Consolas'
         r.font.size = Pt(9.5)
-        r.font.color.rgb = RGBColor(20, 30, 40)
+        r.font.color.rgb = RGBColor(0, 0, 0)
 
     p_spacer = doc.add_paragraph()
     p_spacer.paragraph_format.space_before = Pt(0)
@@ -253,9 +280,10 @@ def build_report():
     f_run = f_p.add_run()
     f_run.font.name = 'Times New Roman'
     f_run.font.size = Pt(11)
+    f_run.font.color.rgb = RGBColor(0, 0, 0)
     add_page_number(f_run)
 
-    # Set base Normal Style
+    # Set base Normal Style (Monochrome / Colorless)
     style_normal = doc.styles['Normal']
     style_normal.font.name = 'Times New Roman'
     style_normal.font.size = Pt(13)
@@ -340,7 +368,7 @@ def build_report():
         if stripped == '---':
             continue
 
-        # Heading 1: Chapters & Front Matter (# Title)
+        # Heading 1: Chapters & Front Matter (# Title) - Colorless Pure Black
         if raw.startswith('# '):
             text = raw[2:].strip()
             p = doc.add_paragraph()
@@ -352,9 +380,9 @@ def build_report():
             run.font.name = 'Times New Roman'
             run.font.size = Pt(16)
             run.font.bold = True
-            run.font.color.rgb = RGBColor(0, 43, 73) # ST Navy
+            run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
-        # Heading 2: Level 1 Sections (## 1.1 ...)
+        # Heading 2: Level 1 Sections (## 1.1 ...) - Pure Black
         elif raw.startswith('## '):
             text = raw[3:].strip()
             p = doc.add_paragraph()
@@ -366,9 +394,9 @@ def build_report():
             run.font.name = 'Times New Roman'
             run.font.size = Pt(14)
             run.font.bold = True
-            run.font.color.rgb = RGBColor(0, 0, 0)
+            run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
-        # Heading 3: Level 2 Subsections (### 1.1.1 ...)
+        # Heading 3: Level 2 Subsections (### 1.1.1 ...) - Pure Black
         elif raw.startswith('### '):
             text = raw[4:].strip()
             p = doc.add_paragraph()
@@ -380,7 +408,7 @@ def build_report():
             run.font.name = 'Times New Roman'
             run.font.size = Pt(13)
             run.font.bold = True
-            run.font.color.rgb = RGBColor(0, 0, 0)
+            run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
         # Table Captions (starts with *Bảng...)
         elif stripped.startswith('*Bảng ') or stripped.startswith('Bảng '):
@@ -394,6 +422,7 @@ def build_report():
             run.font.name = 'Times New Roman'
             run.font.size = Pt(13)
             run.font.bold = True
+            run.font.color.rgb = RGBColor(0, 0, 0)
 
         # Figure Captions (starts with *Hình...)
         elif stripped.startswith('*Hình ') or stripped.startswith('Hình '):
@@ -406,6 +435,7 @@ def build_report():
             run.font.name = 'Times New Roman'
             run.font.size = Pt(12)
             run.font.italic = True
+            run.font.color.rgb = RGBColor(0, 0, 0)
 
         # Bullet items
         elif stripped.startswith('* ') or stripped.startswith('- '):
@@ -448,14 +478,36 @@ def build_report():
     out_docx = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\BAO_CAO_DO_AN_AQUATIC_GUARDIAN.docx"
     try:
         doc.save(out_docx)
-        print(f"[SUCCESS] High-fidelity academic report saved to: {out_docx}")
+        print(f"[SUCCESS] High-fidelity monochrome report saved to: {out_docx}")
     except PermissionError:
         alt_docx = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\BAO_CAO_DO_AN_AQUATIC_GUARDIAN_v2.docx"
         doc.save(alt_docx)
-        print(f"[WARNING] '{out_docx}' is currently locked by Microsoft Word. Successfully saved updated report to: {alt_docx}")
+        print(f"[WARNING] '{out_docx}' is locked by Word. Saved to: {alt_docx}")
 
 def format_inline_markdown(p, text):
-    """Parses bold, italic, and code spans in paragraph text."""
+    """Parses markdown links, bold, italic, and code spans in black/colorless style."""
+    link_pattern = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
+    pos = 0
+    for m in link_pattern.finditer(text):
+        pre_text = text[pos:m.start()]
+        if pre_text:
+            format_inline_spans(p, pre_text)
+        
+        label = m.group(1).strip()
+        url = m.group(2).strip()
+        
+        is_code = label.startswith('`') and label.endswith('`')
+        clean_label = label.strip('`*')
+        is_bold = '**' in label
+        
+        add_hyperlink(p, url, clean_label, is_code=is_code, is_bold=is_bold)
+        pos = m.end()
+        
+    if pos < len(text):
+        format_inline_spans(p, text[pos:])
+
+def format_inline_spans(p, text):
+    """Parses bold, italic, and code spans in strict monochrome/colorless style."""
     parts = text.split('**')
     for i, part in enumerate(parts):
         if not part:
@@ -466,7 +518,6 @@ def format_inline_markdown(p, text):
             if not subpart:
                 continue
             is_italic = (j % 2 == 1)
-            # handle `code`
             code_parts = subpart.split('`')
             for k, cpart in enumerate(code_parts):
                 if not cpart:
@@ -477,15 +528,14 @@ def format_inline_markdown(p, text):
                 run.font.size = Pt(11.5) if is_code else Pt(13)
                 run.font.bold = is_bold
                 run.font.italic = is_italic
-                if is_code:
-                    run.font.color.rgb = RGBColor(160, 40, 40)
+                run.font.color.rgb = RGBColor(0, 0, 0) # Strict Black (Colorless)
 
 def process_markdown_table(doc, lines):
-    """Converts markdown table lines into a styled Word table."""
+    """Converts markdown table lines into a styled monochrome Word table."""
     rows_data = []
     for l in lines:
         if '---' in l:
-            continue # Skip markdown separator row
+            continue
         cols = [clean_latex_artifacts(c.strip()) for c in l.split('|')[1:-1]]
         if cols:
             rows_data.append(cols)
@@ -499,12 +549,12 @@ def process_markdown_table(doc, lines):
     table = doc.add_table(rows=num_rows, cols=num_cols)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = True
-    set_table_borders(table, color="D0D7DE", sz="4", val="single")
+    set_table_borders(table, color="707070", sz="4", val="single")
 
-    # Style header row
+    # Style header row (Light neutral gray fill + Bold Black text)
     for col_idx, text in enumerate(rows_data[0]):
         cell = table.cell(0, col_idx)
-        set_cell_background(cell, "002B49") # Dark Navy
+        set_cell_background(cell, "EAEAEA") # Neutral Light Gray (Prints clean)
         set_cell_margins(cell, top=120, bottom=120, left=150, right=150)
         p = cell.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -514,17 +564,15 @@ def process_markdown_table(doc, lines):
         run.font.name = 'Times New Roman'
         run.font.size = Pt(11)
         run.font.bold = True
-        run.font.color.rgb = RGBColor(255, 255, 255)
+        run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
-    # Style data rows
+    # Style data rows (Clean white background, no colored stripes)
     for row_idx in range(1, num_rows):
         r_data = rows_data[row_idx]
-        is_even = (row_idx % 2 == 0)
         for col_idx in range(num_cols):
             cell = table.cell(row_idx, col_idx)
             val = r_data[col_idx] if col_idx < len(r_data) else ""
-            if is_even:
-                set_cell_background(cell, "F2F5F8") # Subtle zebra stripe
+            set_cell_background(cell, "FFFFFF") # Clean White (Colorless)
             set_cell_margins(cell, top=100, bottom=100, left=140, right=140)
             p = cell.paragraphs[0]
             p.paragraph_format.space_before = Pt(2)
@@ -534,6 +582,7 @@ def process_markdown_table(doc, lines):
             format_inline_markdown(p, val)
             for r in p.runs:
                 r.font.size = Pt(11)
+                r.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
     # Add spacing after table
     p_spacer = doc.add_paragraph()

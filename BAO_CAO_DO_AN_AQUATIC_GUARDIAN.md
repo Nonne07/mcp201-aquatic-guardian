@@ -327,7 +327,7 @@ Tích hợp ngay trên cùng bo mạch ZS-042 với DS3231 là chip nhớ EEPROM
    * Vi điều khiển phụ ESP32 kết nối vào mạng Wi-Fi cục bộ, chạy chương trình Telegram Bot để lắng nghe các lệnh từ người dùng (`/feed`, `/status`) và phát Web Dashboard HTML responsive. Khi nhận được lệnh `/feed`, ESP32 gửi chuỗi ký tự định khung `~feed~` sang STM32 để kích hoạt động cơ.
 2. **Kênh Giám Sát Dự Phòng Failsafe (`USART2` - `PA2` TX / `PA3` RX)**:
    * Cặp chân `PA2`/`PA3` trên bo mạch Nucleo-64 được nhà sản xuất đấu nối cứng qua các cầu hàn phần cứng với chip ST-LINK/V2-1. Tín hiệu UART được ST-LINK chuyển đổi thành cổng nối tiếp ảo (Virtual COM Port - VCP) truyền thẳng lên máy tính qua cáp USB.
-   * Trên máy tính, chúng tôi phát triển một script Python giám sát độc lập ([`scripts/aquatic_pc_bridge.py`](file:///E:/AntiGravityRoot/mcp201-aquatic-guardian/scripts/aquatic_pc_bridge.py)). Kênh này giúp nhóm có thể trình chiếu trực tiếp biểu đồ thông số lên máy chiếu trong buổi bảo vệ mà không phải phụ thuộc vào sóng Wi-Fi của giảng đường.
+   * Trên máy tính, chúng tôi phát triển một script Python giám sát độc lập ([`scripts/aquatic_pc_bridge.py`](https://github.com/Nonne07/mcp201-aquatic-guardian/blob/main/scripts/aquatic_pc_bridge.py)). Kênh này giúp nhóm có thể trình chiếu trực tiếp biểu đồ thông số lên máy chiếu trong buổi bảo vệ mà không phải phụ thuộc vào sóng Wi-Fi của giảng đường.
 
 ## 2.7 THIẾT KẾ MẠCH NGUỒN VÀ 6 VẤN ĐỀ KỸ THUẬT TRỌNG YẾU TRONG TRIỂN KHAI PHẦN CỨNG THỰC TẾ
 
@@ -511,7 +511,7 @@ $$ TDS (ppm) = [133.42 × (V_comp)^3 - 255.86 × (V_comp)^2 + 857.39 × V_comp] 
 
 ## 4.1 KẾT QUẢ KIỂM THỬ ĐỘC LẬP 4 MODULE PHẦN CỨNG (STANDALONE BENCH TESTS)
 
-Để đảm bảo từng thành viên trong nhóm có thể phát triển và kiểm tra độc lập các khối chức năng mà không phụ thuộc lẫn nhau, chúng tôi đã xây dựng bộ 4 chương trình kiểm thử độc lập (nằm trong thư mục [`src/standalone_tests/`](file:///E:/AntiGravityRoot/mcp201-aquatic-guardian/src/standalone_tests/)):
+Để đảm bảo từng thành viên trong nhóm có thể phát triển và kiểm tra độc lập các khối chức năng mà không phụ thuộc lẫn nhau, chúng tôi đã xây dựng bộ 4 chương trình kiểm thử độc lập (nằm trong thư mục [`src/standalone_tests/`](https://github.com/Nonne07/mcp201-aquatic-guardian/tree/main/src/standalone_tests)):
 
 ### 4.1.1 Kiểm thử điều xung PWM Servo SG90 (`test_servo_pwm.c`)
 * **Thiết lập**: Động cơ Servo SG90 kết nối chân `PA0`, cấp nguồn 5V riêng từ module MB102.
@@ -627,15 +627,18 @@ Mặc dù hệ thống đã vận hành ổn định và đạt kết quả cao,
 
 # PHỤ LỤC
 
+> Toàn bộ mã nguồn, tài liệu thiết kế và bảng tính theo dõi tiến độ của đề tài được lưu trữ công khai tại kho mã nguồn GitHub:  
+> **Repository**: [https://github.com/Nonne07/mcp201-aquatic-guardian](https://github.com/Nonne07/mcp201-aquatic-guardian)
+
 ## PHỤ LỤC A: TOÀN VĂN MÃ NGUỒN C ỨNG DỤNG FREERTOS
 Toàn bộ mã nguồn triển khai ứng dụng thời gian thực Aquatic Guardian trên STM32 được lưu trữ tại:
-* Tệp tiêu đề kiến trúc: [`src/aquatic_guardian_app.h`](file:///E:/AntiGravityRoot/mcp201-aquatic-guardian/src/aquatic_guardian_app.h)
-* Tệp hiện thực logic đa nhiệm và driver ngoại vi: [`src/aquatic_guardian_app.c`](file:///E:/AntiGravityRoot/mcp201-aquatic-guardian/src/aquatic_guardian_app.c)
+* Tệp tiêu đề kiến trúc: [`src/aquatic_guardian_app.h`](https://github.com/Nonne07/mcp201-aquatic-guardian/blob/main/src/aquatic_guardian_app.h)
+* Tệp hiện thực logic đa nhiệm và driver ngoại vi: [`src/aquatic_guardian_app.c`](https://github.com/Nonne07/mcp201-aquatic-guardian/blob/main/src/aquatic_guardian_app.c)
 
 ## PHỤ LỤC B: TOÀN VĂN MÃ NGUỒN FIRMWARE ESP32 WI-FI IOT
 Mã nguồn chương trình Arduino C++ chạy trên module ESP32 xử lý Telegram Bot, Web Dashboard và UART định khung:
-* Tệp mã nguồn: [`esp32/esp32_aquatic_bridge.ino`](file:///E:/AntiGravityRoot/mcp201-aquatic-guardian/esp32/esp32_aquatic_bridge.ino)
+* Tệp mã nguồn: [`esp32/esp32_aquatic_bridge.ino`](https://github.com/Nonne07/mcp201-aquatic-guardian/blob/main/esp32/esp32_aquatic_bridge.ino)
 
 ## PHỤ LỤC C: BẢNG DANH MỤC LINH KIỆN CHI TIẾT (BOM) VÀ THÔNG SỐ KỸ THUẬT
-* Tệp tài liệu chi tiết: [`docs/hardware_bom_shopping_list.md`](file:///E:/AntiGravityRoot/mcp201-aquatic-guardian/docs/hardware_bom_shopping_list.md)
-* Bảng tính theo dõi tiến độ đồ án 8 tab: [`Aquatic_Guardian_Task_Tracker.xlsx`](file:///E:/AntiGravityRoot/mcp201-aquatic-guardian/Aquatic_Guardian_Task_Tracker.xlsx)
+* Tệp tài liệu chi tiết: [`docs/hardware_bom_shopping_list.md`](https://github.com/Nonne07/mcp201-aquatic-guardian/blob/main/docs/hardware_bom_shopping_list.md)
+* Bảng tính theo dõi tiến độ đồ án 8 tab: [`Aquatic_Guardian_Task_Tracker.xlsx`](https://github.com/Nonne07/mcp201-aquatic-guardian/blob/main/Aquatic_Guardian_Task_Tracker.xlsx)
