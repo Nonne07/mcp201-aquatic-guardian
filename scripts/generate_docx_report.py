@@ -9,6 +9,7 @@ Purpose: Generates the official Microsoft Word report (.docx) complying
 """
 
 import os
+import re
 import docx
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor, Cm
@@ -34,11 +35,181 @@ def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
         tcMar.append(node)
     tcPr.append(tcMar)
 
+def set_table_borders(table, color="D0D7DE", sz="4", val="single"):
+    """Applies clean outer border to a table."""
+    tblPr = table._tbl.tblPr
+    tblBorders = parse_xml(
+        f'<w:tblBorders {nsdecls("w")}>\n'
+        f'  <w:top w:val="{val}" w:sz="{sz}" w:space="0" w:color="{color}"/>\n'
+        f'  <w:left w:val="{val}" w:sz="{sz}" w:space="0" w:color="{color}"/>\n'
+        f'  <w:bottom w:val="{val}" w:sz="{sz}" w:space="0" w:color="{color}"/>\n'
+        f'  <w:right w:val="{val}" w:sz="{sz}" w:space="0" w:color="{color}"/>\n'
+        f'  <w:insideH w:val="none"/>\n'
+        f'  <w:insideV w:val="none"/>\n'
+        f'</w:tblBorders>'
+    )
+    tblPr.append(tblBorders)
+
 def add_page_number(run):
     """Inserts a dynamic page number field into a run."""
     fldSimple = OxmlElement('w:fldSimple')
     fldSimple.set(qn('w:instr'), 'PAGE')
     run._r.append(fldSimple)
+
+def add_formula_box(doc, formula_text, eq_number=""):
+    """Inserts a dedicated formula box with right-aligned numbering."""
+    table = doc.add_table(rows=1, cols=2)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    set_table_borders(table, color="B0C4DE", sz="6", val="single")
+
+    # Left cell: Math formula (width ~ 13.5 cm)
+    cell_form = table.cell(0, 0)
+    cell_form.width = Cm(13.2)
+    set_cell_background(cell_form, "F4F6F9")
+    set_cell_margins(cell_form, top=140, bottom=140, left=180, right=100)
+    p_form = cell_form.paragraphs[0]
+    p_form.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_form.paragraph_format.space_before = Pt(4)
+    p_form.paragraph_format.space_after = Pt(4)
+    r_form = p_form.add_run(formula_text)
+    r_form.font.name = 'Cambria Math'
+    r_form.font.size = Pt(12)
+    r_form.font.italic = True
+    r_form.font.color.rgb = RGBColor(0, 32, 96)
+
+    # Right cell: Equation number (width ~ 2.3 cm)
+    cell_num = table.cell(0, 1)
+    cell_num.width = Cm(2.3)
+    set_cell_background(cell_num, "F4F6F9")
+    set_cell_margins(cell_num, top=140, bottom=140, left=50, right=180)
+    p_num = cell_num.paragraphs[0]
+    p_num.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    p_num.paragraph_format.space_before = Pt(4)
+    p_num.paragraph_format.space_after = Pt(4)
+    r_num = p_num.add_run(eq_number)
+    r_num.font.name = 'Times New Roman'
+    r_num.font.size = Pt(12)
+    r_num.font.bold = True
+    r_num.font.color.rgb = RGBColor(0, 43, 73)
+
+    p_spacer = doc.add_paragraph()
+    p_spacer.paragraph_format.space_before = Pt(0)
+    p_spacer.paragraph_format.space_after = Pt(6)
+
+def add_callout_box(doc, text_lines):
+    """Inserts a styled note / quote callout box."""
+    table = doc.add_table(rows=1, cols=1)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    
+    tblPr = table._tbl.tblPr
+    tblBorders = parse_xml(
+        f'<w:tblBorders {nsdecls("w")}>\n'
+        f'  <w:top w:val="none"/>\n'
+        f'  <w:left w:val="single" w:sz="24" w:space="0" w:color="002B49"/>\n'
+        f'  <w:bottom w:val="none"/>\n'
+        f'  <w:right w:val="none"/>\n'
+        f'  <w:insideH w:val="none"/>\n'
+        f'  <w:insideV w:val="none"/>\n'
+        f'</w:tblBorders>'
+    )
+    tblPr.append(tblBorders)
+
+    cell = table.cell(0, 0)
+    cell.width = Cm(15.5)
+    set_cell_background(cell, "F0F4F8")
+    set_cell_margins(cell, top=140, bottom=140, left=180, right=180)
+
+    p = cell.paragraphs[0]
+    p.paragraph_format.space_before = Pt(2)
+    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.line_spacing = 1.3
+    full_text = " ".join(text_lines)
+    format_inline_markdown(p, full_text)
+
+    p_spacer = doc.add_paragraph()
+    p_spacer.paragraph_format.space_before = Pt(0)
+    p_spacer.paragraph_format.space_after = Pt(6)
+
+def add_code_block(doc, code_lines):
+    """Inserts a formatted code/ASCII diagram block."""
+    table = doc.add_table(rows=1, cols=1)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    set_table_borders(table, color="CCD6E0", sz="4", val="single")
+
+    cell = table.cell(0, 0)
+    cell.width = Cm(15.5)
+    set_cell_background(cell, "F8F9FA")
+    set_cell_margins(cell, top=120, bottom=120, left=150, right=150)
+
+    p = cell.paragraphs[0]
+    p.paragraph_format.space_before = Pt(2)
+    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.line_spacing = 1.05
+
+    for idx, c_line in enumerate(code_lines):
+        r = p.add_run(c_line + ("\n" if idx < len(code_lines) - 1 else ""))
+        r.font.name = 'Consolas'
+        r.font.size = Pt(9.5)
+        r.font.color.rgb = RGBColor(20, 30, 40)
+
+    p_spacer = doc.add_paragraph()
+    p_spacer.paragraph_format.space_before = Pt(0)
+    p_spacer.paragraph_format.space_after = Pt(6)
+
+def clean_latex_artifacts(text):
+    """Replaces common LaTeX artifacts with clean Unicode symbols."""
+    text = text.replace(r'$NH_3$', 'NH₃')
+    text = text.replace(r'$NO_2^-$', 'NO₂⁻')
+    text = text.replace(r'$\pm 0.5^\circ\text{C}$', '±0.5°C')
+    text = text.replace(r'$\pm 1.5\text{ ppm}$', '±1.5 ppm')
+    text = text.replace(r'$\pm 50\text{ ppm}$', '±50 ppm')
+    text = text.replace(r'$\pm 65$', '±65')
+    text = text.replace(r'$0.25^\circ\text{C}$', '0.25°C')
+    text = text.replace(r'$25.0^\circ\text{C}$', '25.0°C')
+    text = text.replace(r'$0^\circ \to 90^\circ$', '0° → 90°')
+    text = text.replace(r'$0^\circ$', '0°')
+    text = text.replace(r'$90^\circ$', '90°')
+    text = text.replace(r'$1.0\text{ ms}$', '1.0 ms')
+    text = text.replace(r'$1.5\text{ ms}$', '1.5 ms')
+    text = text.replace(r'$380\text{ ms}$', '380 ms')
+    text = text.replace(r'$800\text{ ms}$', '800 ms')
+    text = text.replace(r'$1500\text{ ms}$', '1500 ms')
+    text = text.replace(r'$185\text{ ms}$', '185 ms')
+    text = text.replace(r'$300\text{ ms}$', '300 ms')
+    text = text.replace(r'$4.2\text{ ms}$', '4.2 ms')
+    text = text.replace(r'$2.8\text{ ms}$', '2.8 ms')
+    text = text.replace(r'$10\text{ ms}$', '10 ms')
+    text = text.replace(r'$50\text{ ms}$', '50 ms')
+    text = text.replace(r'$1.5\text{ giây}$', '1.5 giây')
+    text = text.replace(r'$1\mu\text{s}$', '1 µs')
+    text = text.replace(r'$0.85\,\mu\text{s}$', '0.85 µs')
+    text = text.replace(r'$10\,\mu\text{s}$', '10 µs')
+    text = text.replace(r'$48.2\text{ KB}$', '48.2 KB')
+    text = text.replace(r'$512.0\text{ KB}$', '512.0 KB')
+    text = text.replace(r'$12.4\text{ KB}$', '12.4 KB')
+    text = text.replace(r'$96.0\text{ KB}$', '96.0 KB')
+    text = text.replace(r'$4096\text{ Bytes}$', '4096 Bytes')
+    text = text.replace(r'$8192\text{ Bytes}$', '8192 Bytes')
+    text = text.replace(r'$112.4\text{ ppm}$', '112.4 ppm')
+    text = text.replace(r'$685.2\text{ ppm}$', '685.2 ppm')
+    text = text.replace(r'$100\%$', '100%')
+    text = text.replace(r'$5\text{V} - 3.3\text{V} = 1.7\text{V}$', '5V - 3.3V = 1.7V')
+    text = text.replace(r'$O(1)$', 'O(1)')
+    text = text.replace(r'$O(N)$', 'O(N)')
+    text = text.replace(r'$N = 20$', 'N = 20')
+    text = text.replace(r'$\text{CCR1} = 1000$', 'CCR1 = 1000')
+    text = text.replace(r'$\text{CCR1} = 1500$', 'CCR1 = 1500')
+    text = text.replace(r'$\text{Dwell Time}$', 'Dwell Time')
+    text = text.replace(r'$V_{\text{comp}}$', 'V_comp')
+    text = text.replace(r'$V_{\text{adc}}$', 'V_adc')
+    text = text.replace(r'$T_{\text{water}}$', 'T_water')
+    text = text.replace(r'$X_{\text{new}}$', 'X_new')
+    text = text.replace(r'$X_{\text{old}}$', 'X_old')
+    text = text.replace(r'$X_{\text{filtered}}$', 'X_filtered')
+    return text
 
 def build_report():
     doc = Document()
@@ -79,10 +250,58 @@ def build_report():
 
     in_table = False
     table_lines = []
+
+    in_code = False
+    code_lines = []
+
+    in_quote = False
+    quote_lines = []
     
     for line in lines:
         raw = line.rstrip('\r\n')
         stripped = raw.strip()
+
+        # Handle Code block delimiters (```)
+        if stripped.startswith('```'):
+            if in_code:
+                in_code = False
+                add_code_block(doc, code_lines)
+                code_lines = []
+            else:
+                in_code = True
+                code_lines = []
+            continue
+
+        if in_code:
+            code_lines.append(raw)
+            continue
+
+        # Handle Blockquotes (starts with >)
+        if stripped.startswith('>'):
+            in_quote = True
+            quote_text = stripped[1:].strip()
+            if quote_text:
+                quote_lines.append(quote_text)
+            continue
+        elif in_quote:
+            in_quote = False
+            add_callout_box(doc, quote_lines)
+            quote_lines = []
+
+        # Handle Dedicated Formula Lines (e.g. $$ ... \tag{x.y} $$ or [FORMULA])
+        if stripped.startswith('$$') and stripped.endswith('$$'):
+            content = stripped[2:-2].strip()
+            # Extract \tag{...} if present
+            tag_match = re.search(r'\\tag\{([^}]+)\}', content)
+            eq_num = f"({tag_match.group(1)})" if tag_match else ""
+            clean_form = re.sub(r'\\tag\{[^}]+\}', '', content).strip()
+            # Clean LaTeX text wrappers
+            clean_form = clean_form.replace(r'\text{', '').replace(r'}', '')
+            clean_form = clean_form.replace(r'\left\lfloor', '⌊').replace(r'\right\rfloor', '⌋')
+            clean_form = clean_form.replace(r'\times', '×').replace(r'\frac', '')
+            clean_form = clean_latex_artifacts(clean_form)
+            add_formula_box(doc, clean_form, eq_num)
+            continue
 
         # Handle markdown table blocks
         if stripped.startswith('|') and stripped.endswith('|'):
@@ -90,7 +309,6 @@ def build_report():
             table_lines.append(stripped)
             continue
         elif in_table:
-            # End of table, process buffered table
             in_table = False
             process_markdown_table(doc, table_lines)
             table_lines = []
@@ -170,7 +388,7 @@ def build_report():
 
         # Bullet items
         elif stripped.startswith('* ') or stripped.startswith('- '):
-            text = stripped[2:].strip()
+            text = clean_latex_artifacts(stripped[2:].strip())
             p = doc.add_paragraph(style='List Bullet')
             p.paragraph_format.space_before = Pt(2)
             p.paragraph_format.space_after = Pt(2)
@@ -180,7 +398,7 @@ def build_report():
 
         # Numbered items
         elif len(stripped) > 2 and stripped[0].isdigit() and stripped[1] in ['.', ')']:
-            text = stripped[2:].strip()
+            text = clean_latex_artifacts(stripped[2:].strip())
             p = doc.add_paragraph(style='List Number')
             p.paragraph_format.space_before = Pt(2)
             p.paragraph_format.space_after = Pt(2)
@@ -190,24 +408,28 @@ def build_report():
 
         # Standard Paragraphs
         else:
+            text = clean_latex_artifacts(stripped)
             p = doc.add_paragraph()
             p.paragraph_format.space_before = Pt(6)
             p.paragraph_format.space_after = Pt(4)
             p.paragraph_format.line_spacing = 1.5
             p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            format_inline_markdown(p, stripped)
+            format_inline_markdown(p, text)
 
-    # If any trailing table
+    # Flush any trailing table, quote, or code
     if in_table and table_lines:
         process_markdown_table(doc, table_lines)
+    if in_code and code_lines:
+        add_code_block(doc, code_lines)
+    if in_quote and quote_lines:
+        add_callout_box(doc, quote_lines)
 
     out_docx = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\BAO_CAO_DO_AN_AQUATIC_GUARDIAN.docx"
     doc.save(out_docx)
-    print(f"[SUCCESS] Report saved to: {out_docx}")
+    print(f"[SUCCESS] High-fidelity academic report saved to: {out_docx}")
 
 def format_inline_markdown(p, text):
     """Parses bold, italic, and code spans in paragraph text."""
-    # Simple parser for **bold** and *italic*
     parts = text.split('**')
     for i, part in enumerate(parts):
         if not part:
@@ -238,7 +460,7 @@ def process_markdown_table(doc, lines):
     for l in lines:
         if '---' in l:
             continue # Skip markdown separator row
-        cols = [c.strip() for c in l.split('|')[1:-1]]
+        cols = [clean_latex_artifacts(c.strip()) for c in l.split('|')[1:-1]]
         if cols:
             rows_data.append(cols)
 
@@ -251,6 +473,7 @@ def process_markdown_table(doc, lines):
     table = doc.add_table(rows=num_rows, cols=num_cols)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = True
+    set_table_borders(table, color="D0D7DE", sz="4", val="single")
 
     # Style header row
     for col_idx, text in enumerate(rows_data[0]):
@@ -293,4 +516,3 @@ def process_markdown_table(doc, lines):
 
 if __name__ == '__main__':
     build_report()
-
