@@ -57,13 +57,13 @@ def add_page_number(run):
     run._r.append(fldSimple)
 
 def add_formula_box(doc, formula_text, eq_number=""):
-    """Inserts a dedicated formula box with right-aligned numbering."""
+    """Inserts a dedicated shaded formula box with right-aligned numbering and professional math typography."""
     table = doc.add_table(rows=1, cols=2)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
     set_table_borders(table, color="B0C4DE", sz="6", val="single")
 
-    # Left cell: Math formula (width ~ 13.5 cm)
+    # Left cell: Math formula (width ~ 13.2 cm)
     cell_form = table.cell(0, 0)
     cell_form.width = Cm(13.2)
     set_cell_background(cell_form, "F4F6F9")
@@ -72,11 +72,33 @@ def add_formula_box(doc, formula_text, eq_number=""):
     p_form.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_form.paragraph_format.space_before = Pt(4)
     p_form.paragraph_format.space_after = Pt(4)
-    r_form = p_form.add_run(formula_text)
-    r_form.font.name = 'Cambria Math'
-    r_form.font.size = Pt(12)
-    r_form.font.italic = True
-    r_form.font.color.rgb = RGBColor(0, 32, 96)
+
+    # Tokenize formula for subscripts, superscripts and regular math symbols
+    pattern = re.compile(r'_([a-zA-Z0-9]+|\([^)]+\))|\^([a-zA-Z0-9]+|\([^)]+\))|([^_^\n]+)')
+    for m in pattern.finditer(formula_text):
+        sub_val = m.group(1)
+        sup_val = m.group(2)
+        norm_val = m.group(3)
+        if sub_val is not None:
+            r = p_form.add_run(sub_val.strip('()'))
+            r.font.name = 'Cambria Math'
+            r.font.size = Pt(11)
+            r.font.italic = True
+            r.font.subscript = True
+            r.font.color.rgb = RGBColor(0, 32, 96)
+        elif sup_val is not None:
+            r = p_form.add_run(sup_val.strip('()'))
+            r.font.name = 'Cambria Math'
+            r.font.size = Pt(11)
+            r.font.italic = True
+            r.font.superscript = True
+            r.font.color.rgb = RGBColor(0, 32, 96)
+        elif norm_val is not None:
+            r = p_form.add_run(norm_val)
+            r.font.name = 'Cambria Math'
+            r.font.size = Pt(12)
+            r.font.italic = True
+            r.font.color.rgb = RGBColor(0, 32, 96)
 
     # Right cell: Equation number (width ~ 2.3 cm)
     cell_num = table.cell(0, 1)
@@ -288,19 +310,18 @@ def build_report():
             add_callout_box(doc, quote_lines)
             quote_lines = []
 
-        # Handle Dedicated Formula Lines (e.g. $$ ... \tag{x.y} $$ or [FORMULA])
+        # Handle Dedicated Formula Lines (delimited by $$ ... $$)
         if stripped.startswith('$$') and stripped.endswith('$$'):
             content = stripped[2:-2].strip()
-            # Extract \tag{...} if present
-            tag_match = re.search(r'\\tag\{([^}]+)\}', content)
-            eq_num = f"({tag_match.group(1)})" if tag_match else ""
-            clean_form = re.sub(r'\\tag\{[^}]+\}', '', content).strip()
-            # Clean LaTeX text wrappers
-            clean_form = clean_form.replace(r'\text{', '').replace(r'}', '')
-            clean_form = clean_form.replace(r'\left\lfloor', '⌊').replace(r'\right\rfloor', '⌋')
-            clean_form = clean_form.replace(r'\times', '×').replace(r'\frac', '')
-            clean_form = clean_latex_artifacts(clean_form)
-            add_formula_box(doc, clean_form, eq_num)
+            # Extract trailing equation tag like (2.1), (3.1), etc.
+            eq_match = re.search(r'\(([0-9]+\.[0-9]+)\)\s*$', content)
+            if eq_match:
+                eq_num = f"({eq_match.group(1)})"
+                formula_text = content[:eq_match.start()].strip()
+            else:
+                eq_num = ""
+                formula_text = content
+            add_formula_box(doc, formula_text, eq_num)
             continue
 
         # Handle markdown table blocks
@@ -425,8 +446,13 @@ def build_report():
         add_callout_box(doc, quote_lines)
 
     out_docx = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\BAO_CAO_DO_AN_AQUATIC_GUARDIAN.docx"
-    doc.save(out_docx)
-    print(f"[SUCCESS] High-fidelity academic report saved to: {out_docx}")
+    try:
+        doc.save(out_docx)
+        print(f"[SUCCESS] High-fidelity academic report saved to: {out_docx}")
+    except PermissionError:
+        alt_docx = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\BAO_CAO_DO_AN_AQUATIC_GUARDIAN_v2.docx"
+        doc.save(alt_docx)
+        print(f"[WARNING] '{out_docx}' is currently locked by Microsoft Word. Successfully saved updated report to: {alt_docx}")
 
 def format_inline_markdown(p, text):
     """Parses bold, italic, and code spans in paragraph text."""

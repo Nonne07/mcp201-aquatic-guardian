@@ -273,7 +273,7 @@ Nhằm mang lại trải nghiệm tương tác trực quan cho người sử d�
 
 Giá trị ADC 12-bit (0 – 4095) đọc được từ biến trở được ánh xạ tỷ lệ sang khối lượng thức ăn mong muốn trong khoảng từ 1 gram đến 15 gram:
 
-$$ \text{Portion (grams)} = \lfloor (\text{ADC}_{\text{raw}} \times 15) / 4095 \rfloor + 1 \tag{2.1} $$
+$$ Portion (grams) = ⌊(ADC_raw × 15) / 4095⌋ + 1 (2.1) $$
 
 ## 2.4 KHỐI CƠ CẤU CHẤP HÀNH VÀ CẢNH BÁO
 
@@ -286,7 +286,7 @@ Cánh tay đòn của động cơ servo được liên kết trực tiếp với
 
 Khối lượng thức ăn rơi xuống được điều tiết thông qua **Thời gian giữ nắp mở động (Dynamic Dwell Time)** phụ thuộc trực tiếp vào cài đặt của biến trở:
 
-$$ \text{Dwell Time (ms)} = 300\text{ ms} + (\text{Portion} \times 80\text{ ms}) \tag{2.2} $$
+$$ Dwell Time (ms) = 300 ms + (Portion × 80 ms) (2.2) $$
 
 Với công thức này, thời gian mở dao động mượt mà từ 380 ms (cho 1g) đến 1500 ms (cho 15g), đảm bảo độ lặp lại và độ chính xác cao.
 
@@ -462,26 +462,26 @@ Giả sử `Task_DisplayUI` (ưu tiên 12) đang chiếm giữ Mutex để in th
 ### 3.4.1 Bộ lọc trung bình trượt vòng 20 mẫu trong thời gian O(1)
 Trong môi trường bể thủy sinh, các thiết bị sục khí tạo oxy và máy bơm dòng tạo ra sóng nước và bọt khí liên tục quét qua bề mặt điện cực của cảm biến TDS. Điều này làm giá trị điện áp ADC thô bị dao động ngẫu nhiên với biên độ rất lớn (tương đương ±50 ppm). Nếu sử dụng trực tiếp giá trị thô này, hệ thống sẽ liên tục kích hoạt báo động giả.
 
-Để làm mịn tín hiệu, chúng tôi hiện thực hóa một **Bộ lọc trung bình trượt vòng (Circular Moving Average Filter)** với kích thước cửa sổ lọc N = 20 mẫu. Thay vì phải dùng vòng lặp duyệt qua 20 phần tử mỗi giây (tiêu tốn thời gian tính toán O(N)), chúng tôi duy trì một biến tích lũy tổng chạy (Running Sum accumulator). Mỗi khi có mẫu đo mới X_new:
+Để làm mịn tín hiệu, chúng tôi hiện thực hóa một **Bộ lọc trung bình trượt vòng (Circular Moving Average Filter)** với kích thước cửa sổ lọc N = 20 mẫu. Thay vì sử dụng vòng lặp duyệt tuần tự 20 phần tử làm tiêu tốn độ phức tạp thời gian O(N), hệ thống duy trì một biến tích lũy tổng chạy (Running Sum accumulator). Mỗi khi có mẫu đo mới `X_new`:
 
-$$ \text{Sum}_{k} = \text{Sum}_{k-1} - X_{k-N} + X_{k} \tag{3.1} $$
+$$ Sum_k = Sum_(k-1) - X_(k-N) + X_k (3.1) $$
 
-$$ X_{\text{filtered}} = \frac{\text{Sum}_{k}}{N} \tag{3.2} $$
+$$ X_filtered = Sum_k / N (3.2) $$
 
 Phép toán này được thực thi trong thời gian hằng số O(1) chỉ với 1 phép trừ, 1 phép cộng và 1 phép chia, giúp tiết kiệm chu kỳ xung nhịp CPU tối đa.
 
 ### 3.4.2 Phương trình đa thức bậc 3 bù nhiệt độ tính nồng độ TDS
 Độ dẫn điện của các ion trong dung dịch nước tăng lên khoảng 2% cho mỗi độ C tăng thêm của nhiệt độ. Do đó, điện áp đọc được từ cảm biến trước hết phải được chuẩn hóa về nhiệt độ quy chiếu chuẩn 25.0°C:
 
-$$ V_{\text{comp}} = \frac{V_{\text{adc}}}{1.0 + 0.02 \times (T_{\text{water}} - 25.0)} \tag{3.3} $$
+$$ V_comp = V_adc / [1.0 + 0.02 × (T_water - 25.0)] (3.3) $$
 
 Trong đó:
-* $V_{\text{adc}} = (\text{ADC}_{\text{raw}} / 4095) \times 3.3\text{V}$ là điện áp thực tế tại chân `PA1`.
-* $T_{\text{water}}$ là nhiệt độ nước thực tế đo được từ cảm biến DS18B20 (hoặc DS3231).
+* V_adc = (ADC_raw / 4095) × 3.3 V là điện áp thực tế tại chân `PA1`.
+* T_water là nhiệt độ nước thực tế đo được từ cảm biến DS18B20 (hoặc DS3231).
 
-Sau khi có điện áp bù nhiệt $V_{\text{comp}}$, nồng độ chất rắn hòa tan TDS (đơn vị ppm - parts per million) được tính toán chính xác thông qua phương trình đa thức phi tuyến bậc 3:
+Sau khi có điện áp bù nhiệt V_comp, nồng độ chất rắn hòa tan TDS (đơn vị ppm - parts per million) được tính toán chính xác thông qua phương trình đa thức phi tuyến bậc 3:
 
-$$ \text{TDS (ppm)} = (133.42 \times V_{\text{comp}}^3 - 255.86 \times V_{\text{comp}}^2 + 857.39 \times V_{\text{comp}}) \times 0.5 \tag{3.4} $$
+$$ TDS (ppm) = [133.42 × (V_comp)^3 - 255.86 × (V_comp)^2 + 857.39 × V_comp] × 0.5 (3.4) $$
 
 *Bảng 3.2: Bảng tra cứu phân loại trạng thái chất lượng nước sinh thái*
 | Dải Giá Trị TDS (ppm) | Nhiệt Độ Nước (°C) | Phân Loại Trạng Thái | Hành Vi Hệ Thống |
