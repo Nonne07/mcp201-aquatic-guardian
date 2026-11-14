@@ -1,11 +1,11 @@
 """
 =============================================================================
-Project: Aquatic Guardian - Capstone MCP201
-Script: generate_pptx_slides.py
+Project: Aquatic Guardian - Capstone MCP201 (Class IC2005 - Group 7)
+Script:  generate_pptx_slides.py
 Purpose: Generates the official presentation slide deck (.pptx)
-         strictly mapped to the FPT University Project Assessment Rubric.
-Design:  16:9 Widescreen, Professional Monochrome Academic Design,
-         Anti-Wall-of-Text Cards Layout.
+         designed as a Stand-Alone Visual Reading Deck for evaluation.
+Design:  16:9 Widescreen, Professional Monochrome Academic Design (IEEE Style),
+         Zero Emojis, Rigorous Engineering Phrasing, Embedded Visual Figures.
 =============================================================================
 """
 
@@ -17,19 +17,21 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
 
-# --- COLOR PALETTE (Strict Monochrome / Academic Grayscale) ---
+# --- COLOR PALETTE (Strict Academic Monochrome / Grayscale) ---
 COLOR_BG_WHITE       = RGBColor(255, 255, 255)
-COLOR_CARD_BG        = RGBColor(248, 249, 250)
-COLOR_CARD_BORDER    = RGBColor(210, 215, 220)
-COLOR_CARD_DARK_BG   = RGBColor(240, 242, 245)
-COLOR_TEXT_PRIMARY   = RGBColor(15, 23, 42)     # Deep Near-Black
-COLOR_TEXT_MUTED     = RGBColor(80, 90, 100)    # Neutral Gray
+COLOR_CARD_BG        = RGBColor(248, 250, 252)
+COLOR_CARD_BORDER    = RGBColor(203, 213, 225)
+COLOR_CARD_DARK_BG   = RGBColor(241, 245, 249)
+COLOR_TEXT_PRIMARY   = RGBColor(15, 23, 42)     # Deep Slate Black
+COLOR_TEXT_MUTED     = RGBColor(71, 85, 105)    # Neutral Slate Gray
 COLOR_TEXT_ACCENT    = RGBColor(0, 0, 0)        # Pure Black Bold
-COLOR_BORDER_SOLID   = RGBColor(40, 45, 50)     # Dark Line
+COLOR_BORDER_SOLID   = RGBColor(30, 41, 59)     # Dark Slate Border
+
+ASSETS_DIR = os.path.abspath(r"E:\AntiGravityRoot\mcp201-aquatic-guardian\assets")
 
 def add_header(slide, category, title, subtitle=None):
     """Adds a standardized academic header to a slide."""
-    header_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.7), Inches(1.1))
+    header_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.7), Inches(1.05))
     tf = header_box.text_frame
     tf.word_wrap = True
     tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
@@ -37,59 +39,66 @@ def add_header(slide, category, title, subtitle=None):
     p_cat = tf.paragraphs[0]
     p_cat.text = category.upper()
     p_cat.font.name = 'Segoe UI'
-    p_cat.font.size = Pt(11)
+    p_cat.font.size = Pt(10.5)
     p_cat.font.bold = True
     p_cat.font.color.rgb = COLOR_TEXT_MUTED
 
     p_title = tf.add_paragraph()
     p_title.text = title
     p_title.font.name = 'Segoe UI'
-    p_title.font.size = Pt(22)
+    p_title.font.size = Pt(20)
     p_title.font.bold = True
     p_title.font.color.rgb = COLOR_TEXT_PRIMARY
-    p_title.space_before = Pt(3)
+    p_title.space_before = Pt(2)
 
     if subtitle:
         p_sub = tf.add_paragraph()
         p_sub.text = subtitle
         p_sub.font.name = 'Segoe UI'
-        p_sub.font.size = Pt(12)
+        p_sub.font.size = Pt(11)
         p_sub.font.color.rgb = COLOR_TEXT_MUTED
         p_sub.space_before = Pt(2)
 
-def add_card(slide, left, top, width, height, bg_color=COLOR_CARD_BG, border_color=COLOR_CARD_BORDER):
+def add_card(slide, left, top, width, height, bg_color=COLOR_CARD_BG, border_color=COLOR_CARD_BORDER, border_width=Pt(1)):
     """Creates a card container shape with subtle fill and border."""
     card = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height)
     card.fill.solid()
     card.fill.fore_color.rgb = bg_color
     if border_color:
         card.line.color.rgb = border_color
-        card.line.width = Pt(1)
+        card.line.width = border_width
     else:
         card.line.fill.background()
     return card
 
+def set_cell_background(cell, hex_color):
+    """Sets background color of a PPT table cell."""
+    cell.fill.solid()
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    cell.fill.fore_color.rgb = RGBColor(r, g, b)
+
 def build_presentation():
     prs = Presentation()
-    # 16:9 Widescreen standard dimensions
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
     blank_layout = prs.slide_layouts[6]
 
     # =========================================================================
-    # SLIDE 1: [Overview]: Title & Capstone Project Information
+    # SLIDE 1: [Tổng Quan]: Trang Tiêu Đề Đồ Án & Thông Tin Nhóm Nghiên Cứu
     # =========================================================================
     s1 = prs.slides.add_slide(blank_layout)
     
     # Left Hero Box
-    card_l = add_card(s1, Inches(0.8), Inches(1.0), Inches(6.8), Inches(5.5), bg_color=RGBColor(245, 247, 250), border_color=COLOR_BORDER_SOLID)
+    card_l = add_card(s1, Inches(0.8), Inches(1.0), Inches(6.8), Inches(5.5), bg_color=COLOR_CARD_DARK_BG, border_color=COLOR_BORDER_SOLID, border_width=Pt(1.5))
     tf_l = card_l.text_frame
     tf_l.word_wrap = True
     tf_l.margin_left = tf_l.margin_right = Inches(0.5)
-    tf_l.margin_top = Inches(0.6)
+    tf_l.margin_top = Inches(0.55)
 
     p = tf_l.paragraphs[0]
-    p.text = "FPT UNIVERSITY • KHOA ĐIỆN TỬ - VIỄN THÔNG"
+    p.text = "TRUONG DAI HOC FPT • KHOA DIEN TU - VIEN THONG"
     p.font.name = 'Segoe UI'
     p.font.size = Pt(11)
     p.font.bold = True
@@ -98,32 +107,43 @@ def build_presentation():
     p = tf_l.add_paragraph()
     p.text = "AQUATIC GUARDIAN"
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(32)
+    p.font.size = Pt(30)
     p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
-    p.space_before = Pt(12)
+    p.space_before = Pt(10)
 
     p = tf_l.add_paragraph()
-    p.text = "Hệ Thống Nhúng Thông Minh Giám Sát Bể Cá & Cho Ăn Tự Động Thời Gian Thực"
+    p.text = "He Thong Nhung Giam Sat Chat Luong Nuoc & Cap Duong Thuy Sinh Tu Dong Thoi Gian Thuc"
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(15)
+    p.font.size = Pt(14)
     p.font.color.rgb = COLOR_TEXT_MUTED
     p.space_before = Pt(6)
 
     p = tf_l.add_paragraph()
-    p.text = "ĐỒ ÁN TỐT NGHIỆP HỌC PHẦN: LẬP TRÌNH VI ĐIỀU KHIỂN (MCP201)"
+    p.text = "DO AN TOT NGHIEP HOC PHAN: LAP TRINH VI DIEU KHIEN (MCP201)"
     p.font.name = 'Segoe UI'
     p.font.size = Pt(12)
     p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
-    p.space_before = Pt(28)
+    p.space_before = Pt(26)
 
     p = tf_l.add_paragraph()
-    p.text = "Nền tảng: STM32F4 Nucleo-64 (ARM Cortex-M4) • FreeRTOS CMSIS-RTOS v2 • ESP32 IoT"
+    p.text = "Kien truc phan cung & phan mem:"
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(11.5)
-    p.font.color.rgb = COLOR_TEXT_MUTED
+    p.font.size = Pt(11)
+    p.font.bold = True
+    p.font.color.rgb = COLOR_TEXT_PRIMARY
     p.space_before = Pt(6)
+
+    p = tf_l.add_paragraph()
+    p.text = "- Bo xu ly trung tam: STM32F401RE Nucleo-64 (ARM Cortex-M4 @ 84 MHz)\n" \
+             "- He dieu hanh thoi gian thuc: FreeRTOS Kernel (CMSIS-RTOS v2)\n" \
+             "- Co-Processor vien thong: ESP32 Wi-Fi IoT Bridge (Giao thuc Dinh khung UART & Telegram Bot)\n" \
+             "- Ma nguon he thong: https://github.com/Nonne07/mcp201-aquatic-guardian"
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(10)
+    p.font.color.rgb = COLOR_TEXT_MUTED
+    p.space_before = Pt(2)
 
     # Right Team Box
     card_r = add_card(s1, Inches(7.8), Inches(1.0), Inches(4.7), Inches(5.5), bg_color=COLOR_CARD_BG, border_color=COLOR_CARD_BORDER)
@@ -133,481 +153,419 @@ def build_presentation():
     tf_r.margin_top = Inches(0.5)
 
     p = tf_r.paragraphs[0]
-    p.text = "LỚP IC2005 — NHÓM 7"
+    p.text = "DANH SACH THANH VIEN NHOM 7 (LOP IC2005)"
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(14)
+    p.font.size = Pt(13)
     p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
 
     members = [
-        ("Nghiêm Hoàng Tùng", "SE211196", "Trưởng nhóm • RTOS & Kiến trúc hệ thống"),
-        ("Hoàng Đức Mạnh", "SE211191", "Kỹ sư Cảm biến & Thuật toán số DSP"),
-        ("Đỗ Khắc Lê Gia", "SE211559", "Kỹ sư Cơ cấu chấp hành & Nguồn điện"),
-        ("Phạm Hồng Minh", "SE211181", "Kỹ sư Bus I2C, RTC DS3231 & LCD UI"),
-        ("Nguyễn Đức Anh", "SE211485", "Kỹ sư IoT, Telegram Bot & Đảm bảo chất lượng")
+        ("Nghiem Hoang Tung", "SE211196", "Truong nhom • Kien truc he thong & Lap lich FreeRTOS"),
+        ("Hoang Duc Manh", "SE211191", "Ky su Cam bien & Thuat toan xu ly tin hieu so DSP"),
+        ("Do Khac Le Gia", "SE211559", "Ky su Co cau chap hanh & Phan phoi nguon dien"),
+        ("Pham Hong Minh", "SE211181", "Ky su Giao tiep bus I2C, RTC DS3231 & Giao dien LCD"),
+        ("Nguyen Duc Anh", "SE211485", "Ky su Phan he IoT, Telegram Bot API & Kiem thu")
     ]
 
     for name, mssv, role in members:
         p_name = tf_r.add_paragraph()
-        p_name.text = f"• {name} ({mssv})"
+        p_name.text = f"{name} ({mssv})"
         p_name.font.name = 'Segoe UI'
-        p_name.font.size = Pt(12)
+        p_name.font.size = Pt(11.5)
         p_name.font.bold = True
         p_name.font.color.rgb = COLOR_TEXT_PRIMARY
-        p_name.space_before = Pt(12)
+        p_name.space_before = Pt(10)
 
         p_role = tf_r.add_paragraph()
-        p_role.text = f"   {role}"
+        p_role.text = f"  Nhiem vu: {role}"
         p_role.font.name = 'Segoe UI'
-        p_role.font.size = Pt(10.5)
+        p_role.font.size = Pt(10)
         p_role.font.color.rgb = COLOR_TEXT_MUTED
 
     # =========================================================================
-    # SLIDE 2: [Context]: Problem Statement & Engineering Goals
+    # SLIDE 2: [Phần 1: Bối Cảnh]: Thách Thức Kỹ Thuật & Mục Tiêu Thiết Kế
     # =========================================================================
     s2 = prs.slides.add_slide(blank_layout)
-    add_header(s2, "Phần 1: Bối Cảnh & Nhiệm Vụ", "BỐI CẢNH SINH THÁI & MỤC TIÊU NÂNG CẤP HỆ THỐNG", 
-               "Giải quyết triệt để 3 nguyên nhân hàng đầu gây tử vong sinh vật thủy sinh nhân tạo")
+    add_header(s2, "Phan 1: Boi Canh & Nhiem Vu He Thong", 
+               "PHAN TICH THACH THUC MOI TRUONG THUY SINH & MUC TIEU HE THONG", 
+               "Giai quyet triet de 3 yeu to rui ro hang dau gay suy thoai he sinh thai thuy sinh nhan tao")
 
-    # 3 Challenge Cards
     col_w = Inches(3.7)
     gap = Inches(0.3)
     left_start = Inches(0.8)
 
     cards_data = [
-        ("1. NỒNG ĐỘ TỔNG CHẤT RẮN TDS", 
-         "• Chất thải của cá và thức ăn thừa phân hủy sinh Ammonia (NH₃) và Nitrite (NO₂⁻).\n"
-         "• TDS vượt quá 500 ppm làm biến đổi áp suất thẩm thấu, tổn thương mang và gây nhiễm độc cấp tính.",
-         "Yêu cầu: Giám sát ADC liên tục 24/7 và báo động khẩn cấp tức thời."),
-        ("2. NHIỆT ĐỘ NƯỚC BỂ CÁ", 
-         "• Cá nhiệt đới sinh trưởng tối ưu trong dải hẹp 24°C – 28°C.\n"
-         "• Biến thiên nhiệt độ đột ngột vượt 30°C – 32°C gây sốc nhiệt và làm suy giảm oxy hòa tan nghiêm trọng.",
-         "Yêu cầu: Cảm biến chống nước DS18B20 1-Wire bù nhiệt chính xác cho TDS."),
-        ("3. ĐỊNH LƯỢNG CHO ĂN CHUẨN XÁC", 
-         "• Cho ăn thiếu gây suy dinh dưỡng; cho ăn thừa là nguyên nhân của 80% trường hợp đục nước và bùng phát rêu hại.\n"
-         "• Bể cá bị bỏ quên khi chủ nhân đi công tác xa.",
-         "Yêu cầu: Định lượng cơ khí tự động theo lịch RTC và lệnh điều khiển Telegram.")
+        ("1. NONG DO TONG CHAT RAN HOA TAN (TDS)", 
+         "- Co che suy thoai:\n"
+         "  Su tich tu chat thai huu co va thuc an du thua phan huy sinh Ammonia (NH3) va Nitrite (NO2-), lam gia tang dot bien mat do ion trong nuoc.\n\n"
+         "- Nguong gioi han sinh hoc:\n"
+         "  Nong do TDS > 500 ppm lam dao lon ap suat tham thau sinh hoc, gay ton thuong bieu mo mang va suy ho hap o sinh vat thuy sinh.\n\n"
+         "- Yeu cau thiet ke he thong:\n"
+         "  Giam sat lien tuc qua bo bien doi ADC1, thuc hien loc nhieu so thoi gian thuc va kich hoat canh bao tuc thoi trong vong <200 ms."),
+        ("2. BIEN THIEN NHIET DO NGOAI DAI AN TOAN", 
+         "- Co che suy thoai:\n"
+         "  Cac loai thuy sinh nhiet doi sinh truong on dinh trong dai nhiet do hep 24.0°C – 28.0°C.\n\n"
+         "- Nguong gioi han sinh hoc:\n"
+         "  Bien thien nhiet do dot ngot vuot nguong (>30.0°C) lam giam manh do hoa tan oxy (DO) va gay sai lech tuyen tinh gia tri dien tro cam bien TDS.\n\n"
+         "- Yeu cau thiet ke he thong:\n"
+         "  Do nhiet do chinh xac qua cam bien DS18B20 1-Wire chong nuoc va tich hop ham bu nhiet do chuan cho phep do nong do TDS."),
+        ("3. SAI LECH CHU KY & KHAU PHAN CAP DUONG", 
+         "- Co che suy thoai:\n"
+         "  Cap duong du thua la nguyen nhan cua 80% truong hop duc nuoc; nguoc lai, gian doan chu ky keo dai dan toi suy kiet the trang sinh vat.\n\n"
+         "- Thuc trang van hanh:\n"
+         "  Nguoi nuoi vang mat hoac quen gio cho an khi di cong tac, thieu cong cu kiem soat tu xa.\n\n"
+         "- Yeu cau thiet ke he thong:\n"
+         "  Tu dong hoa co cau chap hanh dinh luong (1g – 15g) dong bo theo thoi gian thuc RTC DS3231 va tiep nhan lenh dieu khien tu xa qua mang IoT.")
     ]
 
-    for i, (title, body, footer) in enumerate(cards_data):
+    for i, (title, body) in enumerate(cards_data):
         c_left = left_start + i * (col_w + gap)
-        c = add_card(s2, c_left, Inches(1.8), col_w, Inches(4.9))
+        c = add_card(s2, c_left, Inches(1.8), col_w, Inches(5.1))
         tf = c.text_frame
         tf.word_wrap = True
-        tf.margin_left = tf.margin_right = Inches(0.3)
-        tf.margin_top = Inches(0.4)
+        tf.margin_left = tf.margin_right = Inches(0.25)
+        tf.margin_top = Inches(0.3)
 
         p = tf.paragraphs[0]
         p.text = title
         p.font.name = 'Segoe UI'
-        p.font.size = Pt(13)
+        p.font.size = Pt(11.5)
         p.font.bold = True
         p.font.color.rgb = COLOR_TEXT_PRIMARY
 
         p = tf.add_paragraph()
         p.text = body
         p.font.name = 'Segoe UI'
-        p.font.size = Pt(11)
+        p.font.size = Pt(10)
         p.font.color.rgb = COLOR_TEXT_MUTED
-        p.space_before = Pt(12)
+        p.space_before = Pt(8)
 
-        p = tf.add_paragraph()
-        p.text = "🎯 GIẢI PHÁP ĐỒ ÁN:"
+    # =========================================================================
+    # SLIDE 3: [Phần 2: Sơ Đồ Khối]: Sơ Đồ Khối Hệ Thống Kiến Trúc Phân Tán (0.5đ Rubric & 3.0đ Complexity)
+    # =========================================================================
+    s3 = prs.slides.add_slide(blank_layout)
+    add_header(s3, "Phan 2: So Do Khoi & Phan Cung", 
+               "SO DO KHOI KIEN TRUC HE THONG PHAN TAN (DISTRIBUTED DUAL-MCU)", 
+               "Dap ung tieu chi 0.5 diem Block Diagram va 3.0 diem Project Complexity trong Rubric danh gia")
+
+    # Embedded Block Diagram Figure
+    fig_block_path = os.path.join(ASSETS_DIR, "fig_block_diagram.png")
+    if os.path.exists(fig_block_path):
+        s3.shapes.add_picture(fig_block_path, Inches(0.8), Inches(1.65), width=Inches(11.733))
+
+    # Bottom Architecture Summary Note
+    b_note3 = add_card(s3, Inches(0.8), Inches(6.45), Inches(11.733), Inches(0.75), bg_color=COLOR_CARD_DARK_BG, border_color=COLOR_BORDER_SOLID)
+    tf_b3 = b_note3.text_frame
+    tf_b3.word_wrap = True
+    tf_b3.margin_left = Inches(0.25)
+    tf_b3.margin_top = Inches(0.1)
+    p_b3 = tf_b3.paragraphs[0]
+    p_b3.text = "[NGUYEN LY KIEN TRUC DUAL-MCU]: He thong phan chia ranh gioi ro rang giua cac tac vu Thoi gian thuc cung (Hard Real-Time Control) tren STM32 Cortex-M4 va cac tac vu Mang vien thong khong tat dinh (Non-deterministic Wi-Fi/HTTPS) tren ESP32. Hai vi dieu khien giao tiep thong qua UART1 dinh khung '~' o toc do 115200 bps, hoan toan khong gay nghen hay cham tre chu ky dieu khien chap hanh."
+    p_b3.font.name = 'Segoe UI'
+    p_b3.font.size = Pt(9.5)
+    p_b3.font.color.rgb = COLOR_TEXT_PRIMARY
+
+    # =========================================================================
+    # SLIDE 4: [Phần 2: Mạch Điện & Khắc Phục Phần Cứng]: Sơ Đồ Đấu Nối & Giải Pháp (0.5đ Rubric)
+    # =========================================================================
+    s4 = prs.slides.add_slide(blank_layout)
+    add_header(s4, "Phan 2: So Do Khoi & Phan Cung", 
+               "PHAN TICH MACH DIEN & CAC GIAI PHAP PHAN CUNG THUC NGHIEM", 
+               "Minh chung muc do am hieu thuc thi phan cung theo dung tieu chi Rubric (0.5 diem Circuit Analysis)")
+
+    # Embedded Hardware Schematic Figure
+    fig_hw_path = os.path.join(ASSETS_DIR, "fig_hardware_schematic.png")
+    if os.path.exists(fig_hw_path):
+        s4.shapes.add_picture(fig_hw_path, Inches(0.8), Inches(1.65), width=Inches(11.733))
+
+    # Bottom Hardware Fixes Summary
+    b_note4 = add_card(s4, Inches(0.8), Inches(6.45), Inches(11.733), Inches(0.75), bg_color=COLOR_CARD_DARK_BG, border_color=COLOR_BORDER_SOLID)
+    tf_b4 = b_note4.text_frame
+    tf_b4.word_wrap = True
+    tf_b4.margin_left = Inches(0.25)
+    tf_b4.margin_top = Inches(0.1)
+    p_b4 = tf_b4.paragraphs[0]
+    p_b4.text = "[GIAI PHAP THUC NGHIEM TRONG YEU]: 1. Cap Adapter 9V/12V DC qua MB102 loai bo sut ap AMS1117; 2. Mach dem Transistor S8050 cho Active Buzzer bao ve chan PB0 <1mA; 3. Cap nguon 3.3V cho RTC ZS-042 vo hieu hoa dong nap nguoc vao pin CR2032; 4. Ro-le 5V chuyen Jumper sang High-Trigger tuong thich logic 3.3V; 5. Noi chung toan bo Ground (Common GND)."
+    p_b4.font.name = 'Segoe UI'
+    p_b4.font.size = Pt(9.5)
+    p_b4.font.color.rgb = COLOR_TEXT_PRIMARY
+
+    # =========================================================================
+    # SLIDE 5: [Phần 3: FreeRTOS]: Kiến Trúc Đa Nhiệm & Phân Bổ Mức Ưu Tiên
+    # =========================================================================
+    s5 = prs.slides.add_slide(blank_layout)
+    add_header(s5, "Phan 3: Phan Mem & Thoi Gian Thuc", 
+               "KIEN TRUC DA NHIEM TIEN DINH FREERTOS (CMSIS-RTOS V2)", 
+               "Thiet ke bo lap lich dua tren muc uu tien dam bao dap ung thoi gian thuc nghiem ngat")
+
+    # Table of 5 Tasks
+    table_shape = s5.shapes.add_table(6, 5, Inches(0.8), Inches(1.75), Inches(11.733), Inches(3.6))
+    tbl = table_shape.table
+    tbl.columns[0].width = Inches(2.6)
+    tbl.columns[1].width = Inches(1.8)
+    tbl.columns[2].width = Inches(1.6)
+    tbl.columns[3].width = Inches(1.4)
+    tbl.columns[4].width = Inches(4.333)
+
+    headers = ["Ten Tac Vu (Thread Name)", "Muc Uu Tien (Priority)", "Co Che Kich Hoat", "Stack Allocation", "Chuc Nang Ky Thuat Chinh"]
+    for c_idx, h in enumerate(headers):
+        cell = tbl.cell(0, c_idx)
+        set_cell_background(cell, "E2E8F0")
+        p = cell.text_frame.paragraphs[0]
+        p.text = h
         p.font.name = 'Segoe UI'
         p.font.size = Pt(10.5)
         p.font.bold = True
         p.font.color.rgb = COLOR_TEXT_PRIMARY
-        p.space_before = Pt(20)
-
-        p = tf.add_paragraph()
-        p.text = footer
-        p.font.name = 'Segoe UI'
-        p.font.size = Pt(11)
-        p.font.color.rgb = COLOR_TEXT_PRIMARY
-        p.space_before = Pt(2)
-
-    # =========================================================================
-    # SLIDE 3: [Architecture]: Distributed Dual-MCU Block Diagram (0.5đ Rubric)
-    # =========================================================================
-    s3 = prs.slides.add_slide(blank_layout)
-    add_header(s3, "Phần 2: Sơ Đồ Khối & Phần Cứng", "SƠ ĐỒ KHỐI ĐA VI ĐIỀU KHIỂN PHÂN TÁN (DISTRIBUTED DUAL-MCU)", 
-               "Mô hình phân tán đạt chuẩn 3.0 điểm Project Complexity: Cách ly tác vụ Real-Time và tác vụ IoT Wi-Fi")
-
-    # 4 Architecture Columns
-    col4_w = Inches(2.7)
-    gap4 = Inches(0.3)
-    start4 = Inches(0.8)
-
-    arch_blocks = [
-        ("KHỐI CẢM BIẾN (SENSING)",
-         [("Analog TDS V1.0", "PA1 (ADC1_IN1)", "Đo độ bẩn, tụ lọc 0.1µF"),
-          ("Biến trở xoay B10K", "PA4 (ADC1_IN4)", "Mạch phân áp định lượng 1g–15g"),
-          ("DS18B20 chống nước", "PA8 (GPIO OD)", "Chuẩn 1-Wire, trở kéo 4.7kΩ"),
-          ("Nút bấm User B1", "PC13 (EXTI13)", "Ngắt khẩn cấp, lọc rung 300ms")]),
-        ("XỬ LÝ TRUNG TÂM (CORE)",
-         [("STM32 Nucleo-64", "ARM Cortex-M4", "Xung nhịp 84MHz, FPU & DSP"),
-          ("FreeRTOS Kernel", "CMSIS-RTOS v2", "5 tác vụ tiền định độc lập"),
-          ("Đồng bộ liên tác vụ", "Mailbox & Mutex", "Chống chết đói & kế thừa ưu tiên"),
-          ("HAL Timebase", "Timer 5 (TIM5)", "Tránh xung đột với SysTick RTOS")]),
-        ("CƠ CẤU CHẤP HÀNH (ACTUATION)",
-         [("Servo mini SG90", "PA0 (TIM2_CH1)", "Xung PWM 50Hz, góc quay 0°→90°"),
-          ("Rơ-le máy bơm 5V", "PB4 (GPIO Out)", "Cách ly quang, Jumper kích High"),
-          ("Active Buzzer 5V", "PB0 (GPIO Out)", "Có transistor đệm dòng < 1mA"),
-          ("Hệ thống LED chỉ thị", "PA5 & PB1", "LED xanh bình thường, đỏ nháy 1Hz")]),
-        ("BUS NGOẠI VI & VIỄN THÔNG",
-         [("LCD 2004 (PCF8574)", "PB8/PB9 (I2C1)", "Địa chỉ 0x27, hiển thị 4 dòng"),
-          ("RTC DS3231 + EEPROM", "PB8/PB9 (I2C1)", "Địa chỉ 0x68 & 0x57 lưu lịch sử"),
-          ("Module Wi-Fi ESP32", "PA9/PA10 (UART1)", "115200 bps, Telegram Bot & Web"),
-          ("Cáp ST-LINK USB VCP", "PA2/PA3 (UART2)", "115200 bps, giám sát dự phòng PC")])
-    ]
-
-    for i, (b_title, items) in enumerate(arch_blocks):
-        bx = start4 + i * (col4_w + gap4)
-        card = add_card(s3, bx, Inches(1.8), col4_w, Inches(5.0))
-        tf = card.text_frame
-        tf.word_wrap = True
-        tf.margin_left = tf.margin_right = Inches(0.2)
-        tf.margin_top = Inches(0.3)
-
-        p = tf.paragraphs[0]
-        p.text = b_title
-        p.font.name = 'Segoe UI'
-        p.font.size = Pt(11.5)
-        p.font.bold = True
-        p.font.color.rgb = COLOR_TEXT_PRIMARY
-
-        for name, pin, desc in items:
-            p_n = tf.add_paragraph()
-            p_n.text = f"• {name}"
-            p_n.font.name = 'Segoe UI'
-            p_n.font.size = Pt(11)
-            p_n.font.bold = True
-            p_n.font.color.rgb = COLOR_TEXT_PRIMARY
-            p_n.space_before = Pt(8)
-
-            p_d = tf.add_paragraph()
-            p_d.text = f"  [{pin}] {desc}"
-            p_d.font.name = 'Segoe UI'
-            p_d.font.size = Pt(9.5)
-            p_d.font.color.rgb = COLOR_TEXT_MUTED
-
-    # =========================================================================
-    # SLIDE 4: [Hardware]: Conflict-Free Pinout & 6 Critical Hardware Fixes
-    # =========================================================================
-    s4 = prs.slides.add_slide(blank_layout)
-    add_header(s4, "Phần 2: Sơ Đồ Khối & Phần Cứng", "PHÂN TÍCH MẠCH ĐIỆN & 6 GIẢI PHÁP PHẦN CỨNG THỰC TẾ", 
-               "Khắc phục triệt để các rủi ro kỹ thuật tiềm ẩn khi cắm mạch thực tế trên Breadboard (0.5đ Rubric)")
-
-    fixes = [
-        ("1. Bẫy sụt áp IC ổn áp trên mạch MB102", 
-         "Dropout của AMS1117-5.0 là 1.2V. Cấp 5V USB đầu ra chỉ còn ~3.8V làm tối màn hình LCD và rơ-le không đóng.",
-         "Cấp Adapter nguồn 9V/12V DC chân tròn 5.5x2.1mm vào cổng DC của MB102 xuất chuẩn 5.0V."),
-        ("2. Bo Nucleo không cắm được lên Breadboard", 
-         "Hàng chân đực Morpho ở đáy Nucleo cắm xuống breadboard gây chập mạch toàn bộ; ESP32 38 chân che lấp lỗ cắm.",
-         "Đặt Nucleo bên cạnh, dùng 40 sợi dây Cái-Cái câu tín hiệu; chọn mua ESP32 bản 30 chân."),
-        ("3. Còi Buzzer 2 chân gây quá dòng chân chip", 
-         "Còi 2 chân rút dòng tức thời 25–35mA vượt ngưỡng chân PB0 (8–15mA), cuộn cảm sinh xung ngược làm treo chip.",
-         "Thay bằng Module Active Buzzer 3 chân có sẵn transistor đệm S8050, chân PB0 tiêu thụ < 1mA."),
-        ("4. Nguy cơ phồng nổ pin RTC CR2032 trên ZS-042", 
-         "Mạch ZS-042 có sẵn đường nạp nhồi cho pin sạc LIR2032. Cấp 5V sẽ nạp ngược làm phồng rỉ hóa chất pin CR2032.",
-         "Cấp nguồn 3.3V từ chân 3V3 của STM32 vào module, hoặc dùng đầu mỏ hàn gẩy bỏ trở nạp 200Ω."),
-        ("5. Rơ-le 5V kích mức Thấp bị 'dính' trạng thái", 
-         "Khi PB4 xuất mức High (3.3V), chênh áp 5V - 3.3V = 1.7V > 1.2V vẫn đủ làm optocoupler dẫn nhẹ khiến rơ-le dính đóng.",
-         "Chọn Module Rơ-le 1 kênh 5V có Jumper chọn kích High (High Trigger) hoặc cấu hình chân Open-Drain."),
-        ("6. Trở kéo DS18B20 & Quy tắc đấu chéo UART", 
-         "Thiếu trở kéo 1-Wire đường truyền luôn ở mức 0V; đấu nhầm TX-TX/RX-RX làm tê liệt hoàn toàn giao tiếp vi điều khiển.",
-         "Hàn trở kéo ngoài 4.7kΩ lên 3.3V; đấu chéo STM32 PA9 (TX) $\to$ ESP32 RX2 và PA10 (RX) $\to$ ESP32 TX2.")
-    ]
-
-    grid_w = Inches(5.7)
-    grid_h = Inches(2.3)
-    coords = [
-        (Inches(0.8), Inches(1.8)), (Inches(6.8), Inches(1.8)),
-        (Inches(0.8), Inches(4.3)), (Inches(6.8), Inches(4.3))
-    ]
-
-    # Show first 4 on slide, note remaining 2 in summary
-    for i in range(4):
-        c_left, c_top = coords[i]
-        title, prob, fix = fixes[i]
-        card = add_card(s4, c_left, c_top, grid_w, grid_h)
-        tf = card.text_frame
-        tf.word_wrap = True
-        tf.margin_left = tf.margin_right = Inches(0.25)
-        tf.margin_top = Inches(0.2)
-
-        p = tf.paragraphs[0]
-        p.text = title
-        p.font.name = 'Segoe UI'
-        p.font.size = Pt(11.5)
-        p.font.bold = True
-        p.font.color.rgb = COLOR_TEXT_PRIMARY
-
-        p = tf.add_paragraph()
-        p.text = f"• Rủi ro: {prob}"
-        p.font.name = 'Segoe UI'
-        p.font.size = Pt(10)
-        p.font.color.rgb = COLOR_TEXT_MUTED
-        p.space_before = Pt(3)
-
-        p = tf.add_paragraph()
-        p.text = f"✔ Giải pháp: {fix}"
-        p.font.name = 'Segoe UI'
-        p.font.size = Pt(10)
-        p.font.bold = True
-        p.font.color.rgb = COLOR_TEXT_PRIMARY
-        p.space_before = Pt(3)
-
-    # Bottom bar for Fix 5 & 6
-    b_bar = add_card(s4, Inches(0.8), Inches(6.75), Inches(11.7), Inches(0.55), bg_color=RGBColor(240, 243, 246))
-    tf_b = b_bar.text_frame
-    tf_b.word_wrap = True
-    tf_b.margin_left = Inches(0.25)
-    tf_b.margin_top = Inches(0.08)
-    p_b = tf_b.paragraphs[0]
-    p_b.text = "✔ Vấn đề 5 & 6: Module Rơ-le 5V chuyển Jumper sang kích High (High Trigger); Đường 1-Wire kéo trở 4.7kΩ; UART đấu chéo TX↔RX & chung mass GND."
-    p_b.font.name = 'Segoe UI'
-    p_b.font.size = Pt(10)
-    p_b.font.bold = True
-    p_b.font.color.rgb = COLOR_TEXT_PRIMARY
-
-    # =========================================================================
-    # SLIDE 5: [RTOS]: FreeRTOS Multitasking & Priority Hierarchy
-    # =========================================================================
-    s5 = prs.slides.add_slide(blank_layout)
-    add_header(s5, "Phần 3: Phần Mềm & Thời Gian Thực", "KIẾN TRÚC ĐA NHIỆM TIỀN ĐỊNH FREERTOS (CMSIS-RTOS V2)", 
-               "Bộ lập lịch ưu tiên dựa trên thời gian bảo đảm đáp ứng thời gian thực nghiêm ngặt")
-
-    # Table of 5 Tasks
-    table_shape = s5.shapes.add_table(6, 5, Inches(0.8), Inches(1.8), Inches(11.7), Inches(3.6))
-    tbl = table_shape.table
-    tbl.columns[0].width = Inches(2.5)
-    tbl.columns[1].width = Inches(1.8)
-    tbl.columns[2].width = Inches(1.6)
-    tbl.columns[3].width = Inches(1.4)
-    tbl.columns[4].width = Inches(4.4)
-
-    headers = ["Tên Tác Vụ (Thread Name)", "Mức Ưu Tiên (Priority)", "Cơ Chế Kích Hoạt", "Stack Size", "Nhiệm Vụ Kỹ Thuật Chính"]
-    for c_idx, h in enumerate(headers):
-        cell = tbl.cell(0, c_idx)
-        set_cell_background(cell, "EAEAEA")
-        p = cell.text_frame.paragraphs[0]
-        p.text = h
-        p.font.name = 'Segoe UI'
-        p.font.size = Pt(11)
-        p.font.bold = True
-        p.font.color.rgb = COLOR_TEXT_PRIMARY
 
     tasks_table_data = [
-        ("Task_SafetySupervisor", "osPriorityHigh (32)", "Định kỳ 200 ms", "1024 Bytes", "Giám sát an toàn TDS/Nhiệt độ, hú còi chớp LED đỏ tức thời."),
-        ("Task_DispenserControl", "osPriorityAboveNormal (24)", "Event-driven", "1024 Bytes", "Chờ cờ Semaphore, quay Servo nhả thức ăn, ghi log EEPROM."),
-        ("Task_SensorAcquisition", "osPriorityNormal (16)", "Định kỳ 1000 ms", "1024 Bytes", "Đọc luân phiên ADC1, lọc số 20 mẫu O(1), tính TDS bù nhiệt."),
-        ("Task_DisplayUI", "osPriorityBelowNormal (12)", "Định kỳ 500 ms", "2048 Bytes", "Đọc RTC DS3231 và cập nhật 4 dòng thông số lên LCD 2004."),
-        ("Task_Telemetry", "osPriorityLow (8)", "Định kỳ 2000 ms", "2048 Bytes", "Đóng gói JSON định khung '~' phát ra ESP32 và ST-LINK USB.")
+        ("Task_SafetySupervisor", "osPriorityHigh (32)", "Dinh ky 200 ms", "1024 Bytes", "Giam sat nguong nguy hai TDS/Nhiet do, kich hoat còi bao chu dong va LED Alert."),
+        ("Task_DispenserControl", "osPriorityAboveNormal (24)", "Event-Driven", "1024 Bytes", "Cho Semaphore tu Ngat nut bam/Lenh Telegram, quay Servo xa thuc an va ghi EEPROM."),
+        ("Task_SensorAcquisition", "osPriorityNormal (16)", "Dinh ky 1000 ms", "1024 Bytes", "Thu thap luoc phien kenh ADC1, loc trung binh truot 20 mau O(1), tinh TDS bu nhiet."),
+        ("Task_DisplayUI", "osPriorityBelowNormal (12)", "Dinh ky 500 ms", "2048 Bytes", "Doc thoi gian thuc tu RTC DS3231 va cap nhat 4 dong thong so len LCD 2004 qua I2C1."),
+        ("Task_Telemetry", "osPriorityLow (8)", "Dinh ky 2000 ms", "2048 Bytes", "Dong goi ban tin JSON dinh khung '~' truyen phat toi ESP32 UART1 va ST-LINK VCP.")
     ]
 
     for r_idx, r_data in enumerate(tasks_table_data, 1):
         for c_idx, val in enumerate(r_data):
             cell = tbl.cell(r_idx, c_idx)
-            set_cell_background(cell, "FFFFFF")
+            set_cell_background(cell, "FFFFFF" if r_idx % 2 != 0 else "F8FAFC")
             p = cell.text_frame.paragraphs[0]
             p.text = val
             p.font.name = 'Segoe UI'
-            p.font.size = Pt(10.5)
+            p.font.size = Pt(10)
             p.font.color.rgb = COLOR_TEXT_PRIMARY
             if c_idx == 0:
                 p.font.bold = True
 
-    # Technical Callout Box
-    c_note = add_card(s5, Inches(0.8), Inches(5.7), Inches(11.7), Inches(1.3), bg_color=RGBColor(245, 248, 252), border_color=COLOR_BORDER_SOLID)
-    tf_n = c_note.text_frame
-    tf_n.word_wrap = True
-    tf_n.margin_left = Inches(0.3)
-    tf_n.margin_top = Inches(0.18)
+    # Technical Callout Box for CMSIS-RTOS v2 Stack
+    c_note5 = add_card(s5, Inches(0.8), Inches(5.6), Inches(11.733), Inches(1.5), bg_color=COLOR_CARD_DARK_BG, border_color=COLOR_BORDER_SOLID)
+    tf_n5 = c_note5.text_frame
+    tf_n5.word_wrap = True
+    tf_n5.margin_left = Inches(0.3)
+    tf_n5.margin_top = Inches(0.18)
 
-    p = tf_n.paragraphs[0]
-    p.text = "⚠ ĐIỂM QUAN TRỌNG VỀ BỘ NHỚ TRONG CMSIS-RTOS V2:"
+    p = tf_n5.paragraphs[0]
+    p.text = "[DAC TA QUAN TRONG VE QUAN LY BO NHO TRONG CMSIS-RTOS V2]:"
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(11)
+    p.font.size = Pt(10.5)
     p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
 
-    p = tf_n.add_paragraph()
-    p.text = "• Khác với CMSIS-RTOS v1 (tính bằng Words), chuẩn CMSIS-RTOS v2 định nghĩa tham số .stack_size tính nghiêm ngặt bằng BYTES. Nếu truyền nhầm 256 words thành 256 bytes sẽ làm tràn stack và văng HardFault khi gọi hàm snprintf().\n• Đề tài cấp phát an toàn: 1024 Bytes cho tác vụ tính toán và 2048 Bytes cho tác vụ xử lý chuỗi ký tự hiển thị / viễn thông."
+    p = tf_n5.add_paragraph()
+    p.text = "- Khac voi CMSIS-RTOS v1 (trong do tham so stack duoc tinh bang Words = 4 Bytes), chuan CMSIS-RTOS v2 quy dinh .stack_size duoc tinh truc tiep bang BYTES.\n" \
+             "- Neu khai bao nham 256 words thanh 256 bytes se gay ra hien tuong tran vung nho Stack va kich hoat ngoai le phan cung HardFault Handler khi thuc thi ham xu ly chuoi snprintf().\n" \
+             "- He thong cap phat an toan: 1024 Bytes cho cac tac vu xu ly tinh toan va 2048 Bytes cho cac tac vu dinh dang chuoi ky tu hien thi va vien thong JSON."
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(10)
+    p.font.size = Pt(9.5)
     p.font.color.rgb = COLOR_TEXT_MUTED
     p.space_before = Pt(3)
 
     # =========================================================================
-    # SLIDE 6: [Flowchart]: Programming Flowcharts (0.5đ Rubric)
+    # SLIDE 6: [Phần 3: Lưu Đồ Thuật Toán]: Lưu Đồ Điều Khiển FSM & Cảm Biến DSP (0.5đ Rubric)
     # =========================================================================
     s6 = prs.slides.add_slide(blank_layout)
-    add_header(s6, "Phần 3: Phần Mềm & Thời Gian Thực", "LƯU ĐỒ THUẬT TOÁN ĐIỀU KHIỂN & XỬ LÝ TÍN HIỆU SỐ", 
-               "Minh chứng thiết kế lập trình hệ thống theo đúng chuẩn Rubric (0.5đ Flowchart)")
+    add_header(s6, "Phan 3: Phan Mem & Thoi Gian Thuc", 
+               "LUU DO THUAT TOAN DIEU KHIEN & XU LY TIN HIEU SO (FLOWCHART)", 
+               "Minh chung thiet ke lap trinh he thong theo dung tieu chi Rubric (0.5 diem Flowchart)")
 
-    # 2 Flowchart Columns
-    fc_w = Inches(5.7)
-    
-    # Left Flowchart: Feeder Pipeline
-    c_fc1 = add_card(s6, Inches(0.8), Inches(1.8), fc_w, Inches(5.2))
-    tf1 = c_fc1.text_frame
-    tf1.word_wrap = True
-    tf1.margin_left = tf1.margin_right = Inches(0.3)
-    tf1.margin_top = Inches(0.3)
+    # Embedded Flowchart Figure
+    fig_fc_path = os.path.join(ASSETS_DIR, "fig_flowchart.png")
+    if os.path.exists(fig_fc_path):
+        s6.shapes.add_picture(fig_fc_path, Inches(0.8), Inches(1.65), width=Inches(11.733))
 
-    p = tf1.paragraphs[0]
-    p.text = "A. LƯU ĐỒ ĐIỀU KHIỂN CƠ CẤU CHO ĂN (EVENT-DRIVEN)"
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
-
-    steps1 = [
-        ("Kích hoạt sự kiện", "Nút bấm PC13 / Lệnh Telegram / Lịch RTC 00s"),
-        ("Xử lý ngắt ISR", "Lọc rung phím 300ms; gọi osSemaphoreRelease() trong <1µs"),
-        ("Tác vụ thức tỉnh", "Task_DispenserControl thoát trạng thái Blocked"),
-        ("Tính toán thời gian", "Đọc ADC biến trở -> Dwell Time = 300ms + (Portion × 80ms)"),
-        ("Quay động cơ Servo", "PA0 TIM2 phát PWM 1.5ms (90°) giữ mở, sau đó về 1.0ms (0°)"),
-        ("Ghi nhật ký EEPROM", "Chiếm Mutex I2C -> Ghi Unix timestamp & Portion vào AT24C32")
-    ]
-    for s_title, s_desc in steps1:
-        p_s = tf1.add_paragraph()
-        p_s.text = f"▼ {s_title}: {s_desc}"
-        p_s.font.name = 'Segoe UI'
-        p_s.font.size = Pt(10)
-        p_s.font.color.rgb = COLOR_TEXT_PRIMARY
-        p_s.space_before = Pt(8)
-
-    # Right Flowchart: Sensor DSP Pipeline
-    c_fc2 = add_card(s6, Inches(6.8), Inches(1.8), fc_w, Inches(5.2))
-    tf2 = c_fc2.text_frame
-    tf2.word_wrap = True
-    tf2.margin_left = tf2.margin_right = Inches(0.3)
-    tf2.margin_top = Inches(0.3)
-
-    p = tf2.paragraphs[0]
-    p.text = "B. LƯU ĐỒ THU THẬP & XỬ LÝ TÍN HIỆU SỐ TDS (DSP)"
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
-
-    steps2 = [
-        ("Thu thập kênh ADC", "Đọc luân phiên PA1 (TDS) và PA4 (Biến trở) không ghi đè"),
-        ("Lọc số 20 mẫu O(1)", "Sum = Sum - X_old + X_new; X_filtered = Sum / 20"),
-        ("Đọc nhiệt độ nước", "Đọc cảm biến 1-Wire DS18B20 (hoặc thanh ghi RTC DS3231)"),
-        ("Bù nhiệt độ điện áp", "V_comp = V_adc / [1.0 + 0.02 × (T_water - 25.0)]"),
-        ("Đa thức bậc 3 tính TDS", "TDS = (133.42×V³ - 255.86×V² + 857.39×V) × 0.5"),
-        ("Cập nhật Mailbox", "Ghi đè xQueueOverwrite() vào hòm thư Length-1 Mailbox")
-    ]
-    for s_title, s_desc in steps2:
-        p_s = tf2.add_paragraph()
-        p_s.text = f"▼ {s_title}: {s_desc}"
-        p_s.font.name = 'Segoe UI'
-        p_s.font.size = Pt(10)
-        p_s.font.color.rgb = COLOR_TEXT_PRIMARY
-        p_s.space_before = Pt(8)
+    # Bottom Flowchart Summary
+    b_note6 = add_card(s6, Inches(0.8), Inches(6.45), Inches(11.733), Inches(0.75), bg_color=COLOR_CARD_DARK_BG, border_color=COLOR_BORDER_SOLID)
+    tf_b6 = b_note6.text_frame
+    tf_b6.word_wrap = True
+    tf_b6.margin_left = Inches(0.25)
+    tf_b6.margin_top = Inches(0.1)
+    p_b6 = tf_b6.paragraphs[0]
+    p_b6.text = "[NGUYEN LY LAP TRINH PHI KHOA (NON-BLOCKING)]: Tac vu cap duong Dispenser duy tri trang thai Blocked giai phong 100% CPU cho den khi tiep nhan Semaphore. Tac vu cam bien thuc hien dinh thoi chu ky tuyet doi bang ham osDelayUntil loai bo hoan toan hien tuong troi pha (Phase Jitter), thuc thi chuoi loc so va tinh toan da thuc trong thoi gian thuc thi tuc thoi."
+    p_b6.font.name = 'Segoe UI'
+    p_b6.font.size = Pt(9.5)
+    p_b6.font.color.rgb = COLOR_TEXT_PRIMARY
 
     # =========================================================================
-    # SLIDE 7: [Concurrency]: Length-1 Mailbox & Priority Inheritance Proof
+    # SLIDE 7: [Phần 3: DSP & Bù Nhiệt]: Thuật Toán Xử Lý Tín Hiệu Số & Đường Đặc Tuyến (0.5đ Rubric)
     # =========================================================================
     s7 = prs.slides.add_slide(blank_layout)
-    add_header(s7, "Phần 3: Phần Mềm & Thời Gian Thực", "ĐỒNG BỘ LIÊN TÁC VỤ (IPC) & CHỨNG MINH PRIORITY INHERITANCE", 
-               "Giải quyết triệt để hai bài toán kinh điển: Chết đói dữ liệu (Starvation) và Nghịch đảo ưu tiên (Priority Inversion)")
+    add_header(s7, "Phan 3: Phan Mem & Thoi Gian Thuc", 
+               "THUAT TOAN XU LY TIN HIEU SO DSP & MO HINH TOAN BU NHIET DO", 
+               "Khu nhieu bien dong song nuoc va hieu chuan nhiet do chinh xac theo mo hinh hoa hoc nuoc")
 
-    c_ipc1 = add_card(s7, Inches(0.8), Inches(1.8), Inches(5.7), Inches(5.2))
+    # Embedded DSP Plots Figure
+    fig_dsp_path = os.path.join(ASSETS_DIR, "fig_dsp_plots.png")
+    if os.path.exists(fig_dsp_path):
+        s7.shapes.add_picture(fig_dsp_path, Inches(0.8), Inches(1.65), width=Inches(11.733))
+
+    # 2 Bottom Summary Cards
+    c_w7 = Inches(5.7)
+    gap7 = Inches(0.333)
+
+    # Left: Algorithm formula
+    c_dsp_l = add_card(s7, Inches(0.8), Inches(5.35), c_w7, Inches(1.8), bg_color=COLOR_CARD_BG, border_color=COLOR_CARD_BORDER)
+    tf_dl = c_dsp_l.text_frame
+    tf_dl.word_wrap = True
+    tf_dl.margin_left = Inches(0.25)
+    tf_dl.margin_top = Inches(0.15)
+
+    p = tf_dl.paragraphs[0]
+    p.text = "1. THUAT TOAN LOC TRUNG BINH TRUOT VONG DO PHUC TAP O(1)"
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(10.5)
+    p.font.bold = True
+    p.font.color.rgb = COLOR_TEXT_PRIMARY
+
+    p = tf_dl.add_paragraph()
+    p.text = "- Thuat toan cap nhat tong chay tren Circular Buffer:\n" \
+             "  S[k] = S[k-1] - x[k - 20] + x_new;   x_filtered = S[k] / 20.0\n" \
+             "- Hieu qua thuc thi: Chi ton duy nhat 1 phep cong va 1 phep tru moi chu ky lay mau, do phuc tap thoi gian O(1) khong phu thuoc kich thuoc cua so loc. Do lech chuan tin hieu giam tu ±45 ppm xuong duoi ±1.5 ppm."
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(9.5)
+    p.font.color.rgb = COLOR_TEXT_MUTED
+    p.space_before = Pt(3)
+
+    # Right: Compensation formula
+    c_dsp_r = add_card(s7, Inches(0.8) + c_w7 + gap7, Inches(5.35), c_w7, Inches(1.8), bg_color=COLOR_CARD_BG, border_color=COLOR_CARD_BORDER)
+    tf_dr = c_dsp_r.text_frame
+    tf_dr.word_wrap = True
+    tf_dr.margin_left = Inches(0.25)
+    tf_dr.margin_top = Inches(0.15)
+
+    p = tf_dr.paragraphs[0]
+    p.text = "2. MO HINH TOAN BU NHIET DO & DA THUC CHUYEN DOI TDS"
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(10.5)
+    p.font.bold = True
+    p.font.color.rgb = COLOR_TEXT_PRIMARY
+
+    p = tf_dr.add_paragraph()
+    p.text = "- Dien ap quy chuan ve moc nhiet do tieu chuan 25.0°C:\n" \
+             "  V_comp = V_adc / [1.0 + 0.02 * (T_water - 25.0)]\n" \
+             "- Phuong trinh noi suy nong do chat ran hoa tan:\n" \
+             "  TDS = (133.42 * V_comp^3 - 255.86 * V_comp^2 + 857.39 * V_comp) * 0.5\n" \
+             "- Triet tieu sai so dan dien do dao dong nhiet do moi truong nuoc tu 15°C den 35°C."
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(9.5)
+    p.font.color.rgb = COLOR_TEXT_MUTED
+    p.space_before = Pt(3)
+
+    # =========================================================================
+    # SLIDE 8: [Phần 3: Đồng Bộ IPC]: Length-1 Mailbox & Priority Inheritance
+    # =========================================================================
+    s8 = prs.slides.add_slide(blank_layout)
+    add_header(s8, "Phan 3: Phan Mem & Thoi Gian Thuc", 
+               "CO CHE DONG BO LIEN TAC VU (IPC) & PHONG NGUONG NGHICH DAO UU TIEN", 
+               "Giai quyet triet de hai bai toan kinh dien trong he thong nhung: Tac nghen du lieu va Nghich dao do uu tien")
+
+    col_ipc_w = Inches(5.7)
+    gap_ipc = Inches(0.333)
+
+    # Left: Mailbox
+    c_ipc1 = add_card(s8, Inches(0.8), Inches(1.8), col_ipc_w, Inches(5.1))
     tf_i1 = c_ipc1.text_frame
     tf_i1.word_wrap = True
     tf_i1.margin_left = tf_i1.margin_right = Inches(0.3)
     tf_i1.margin_top = Inches(0.3)
 
     p = tf_i1.paragraphs[0]
-    p.text = "1. HÒM THƯ LENGTH-1 MAILBOX CHỐNG CHẾT ĐÓI"
+    p.text = "1. CO CHE HOM THU DON (LENGTH-1 MAILBOX)"
     p.font.name = 'Segoe UI'
     p.font.size = Pt(12)
     p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
 
     p = tf_i1.add_paragraph()
-    p.text = "• Vấn đề kỹ thuật:\nHàng đợi FreeRTOS thông thường mang tính tiêu thụ phá hủy (Destructive Read). Tác vụ Supervisor (ưu tiên 32, chu kỳ 200ms) sẽ chiếm toàn bộ gói tin, khiến DisplayUI và Telemetry bị chết đói dữ liệu (Starvation)."
+    p.text = "- Thach thuc ky thuat (Data Starvation):\n" \
+             "Hang doi FreeRTOS thong thuong mang dac tinh tieu thu pha huy (Destructive Read). Tac vu Supervisor (uu tien 32, chu ky 200 ms) se chiem giu toan bo thong diep, dan toi cac tac vu tieu thu chu ky cham hon (DisplayUI 500 ms va Telemetry 2000 ms) bi co lap hoan toan khoi nguon du lieu cam bien."
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(10.5)
+    p.font.size = Pt(10)
     p.font.color.rgb = COLOR_TEXT_MUTED
     p.space_before = Pt(8)
 
     p = tf_i1.add_paragraph()
-    p.text = "• Giải pháp kỹ thuật đã chốt:\n✔ Producer (Sensor Task) sử dụng hàm xQueueOverwrite() liên tục cập nhật bản ghi mới nhất vào hòm thư độ sâu 1.\n✔ 3 Consumer đều sử dụng hàm xQueuePeek() đọc sao chép nội dung mà KHÔNG xóa gói tin.\n✔ Kết quả: Cả 3 tác vụ đều đọc được dữ liệu mới nhất theo chu kỳ riêng (200ms, 500ms, 2000ms) độc lập hoàn toàn."
+    p.text = "- Giai phap thiet ke he thong:\n" \
+             "- Tac vu san xuat (Sensor Task) su dung ham xQueueOverwrite() de cap nhat ban ghi telemetry moi nhat vao hom thu co do sau 1 phan tu.\n" \
+             "- Cac tac vu tieu thu (Supervisor, Display, Telemetry) deu su dung ham xQueuePeek() de sao chep du lieu ma KHONG lam xoa phan tu khoi hang doi.\n" \
+             "- Ket qua: Ca 3 tac vu deu truy xuat duoc du lieu moi nhat theo chu ky doc lap (200 ms, 500 ms, 2000 ms), loai bo hoan toan hien tuong tac nghen luong du lieu."
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(10.5)
+    p.font.size = Pt(10)
     p.font.color.rgb = COLOR_TEXT_PRIMARY
     p.space_before = Pt(10)
 
-    c_ipc2 = add_card(s7, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.2))
+    # Right: Priority Inheritance
+    c_ipc2 = add_card(s8, Inches(0.8) + col_ipc_w + gap_ipc, Inches(1.8), col_ipc_w, Inches(5.1))
     tf_i2 = c_ipc2.text_frame
     tf_i2.word_wrap = True
     tf_i2.margin_left = tf_i2.margin_right = Inches(0.3)
     tf_i2.margin_top = Inches(0.3)
 
     p = tf_i2.paragraphs[0]
-    p.text = "2. CHỨNG MINH THỪA KẾ QUYỀN ƯU TIÊN (I2C MUTEX)"
+    p.text = "2. KE THUA QUYEN UU TIEN (PRIORITY INHERITANCE) I2C"
     p.font.name = 'Segoe UI'
     p.font.size = Pt(12)
     p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
 
     p = tf_i2.add_paragraph()
-    p.text = "• Vấn đề Nghịch đảo ưu tiên (Priority Inversion):\nTask_DisplayUI (12) đang giữ Mutex I2C1 để ghi LCD. Đúng lúc đó sự kiện cho ăn xảy ra, Task_DispenserControl (24) thức tỉnh chờ Mutex. Nếu có tác vụ trung gian Task_SensorAcquisition (16) thức tỉnh, nó sẽ chiếm CPU và đẩy tác vụ 12 xuống, gián tiếp khóa tác vụ cấp cao 24 vô hạn!"
+    p.text = "- Thach thuc Nghich dao do uu tien (Priority Inversion):\n" \
+             "Tac vu DisplayUI (uu tien 12) dang giu Mutex I2C1 de xuat ky tu len LCD 2004. Cung luc do, su kien cho an kich hoat, Task_DispenserControl (uu tien 24) thuc tinh can truy cap EEPROM va bi khoa lai. Neu tac vu trung gian Task_SensorAcquisition (uu tien 16) thuc tinh chiem CPU, no se ngan DisplayUI hoan tat, gian tiep phong toa tac vu cap cao 24 vo thoi han."
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(10.5)
+    p.font.size = Pt(10)
     p.font.color.rgb = COLOR_TEXT_MUTED
     p.space_before = Pt(8)
 
     p = tf_i2.add_paragraph()
-    p.text = "• Cơ chế Thừa kế quyền ưu tiên (Priority Inheritance):\n✔ Ngay khi tác vụ 24 yêu cầu khóa Mutex, FreeRTOS lập tức nâng mức ưu tiên của tác vụ hiển thị từ 12 lên 24.\n✔ Tác vụ 16 không thể chen ngang, tác vụ hiển thị hoàn tất giao dịch I2C và giải phóng Mutex nhanh nhất.\n✔ Nhả Mutex xong, tác vụ hiển thị hạ về 12, tác vụ cho ăn lập tức chiếm bus ghi EEPROM an toàn."
+    p.text = "- Co che Ke thua quyen uu tien:\n" \
+             "- Khi tac vu 24 yeu cau khoa Mutex, FreeRTOS lap tuc nang tam thoi muc uu tien cua tac vu hien thi tu 12 len bang 24.\n" \
+             "- Tac vu trung gian 16 khong the chen ngang, giup DisplayUI hoan tat giao dich I2C va giai phong Mutex trong thoi gian ngan nhat (4.2 ms).\n" \
+             "- Sau khi nha Mutex, tac vu hien thi ha ve 12, tac vu cap duong lap tuc chiem bus I2C ghi nhat ky EEPROM tuyet doi an toan."
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(10.5)
+    p.font.size = Pt(10)
     p.font.color.rgb = COLOR_TEXT_PRIMARY
     p.space_before = Pt(10)
 
     # =========================================================================
-    # SLIDE 8: [Code Analysis]: Critical Source Code Deep-Dive (0.5đ Rubric)
+    # SLIDE 9: [Phần 3: Phân Tích Mã Nguồn C]: Phân Tích Kỹ Thuật Mã Nguồn (0.5đ Rubric)
     # =========================================================================
-    s8 = prs.slides.add_slide(blank_layout)
-    add_header(s8, "Phần 3: Phần Mềm & Thời Gian Thực", "PHÂN TÍCH MÃ NGUỒN C TRỌNG YẾU (SOURCE CODE ANALYSIS)", 
-               "Minh chứng chất lượng lập trình vi điều khiển STM32 HAL và ESP32 (0.5đ Rubric)")
+    s9 = prs.slides.add_slide(blank_layout)
+    add_header(s9, "Phan 3: Phan Mem & Thoi Gian Thuc", 
+               "PHAN TICH MA NGUON C TRONG YEU (SOURCE CODE ANALYSIS)", 
+               "Minh chung chat luong lap trinh vi dieu khien STM32 HAL va ESP32 theo dung Rubric (0.5 diem Code Analysis)")
 
     col_code_w = Inches(3.7)
     
     code_snippets = [
-        ("A. XỬ LÝ NGẮT TRÌ HOÃN (DEFERRED ISR)",
+        ("A. CO CHE TRI HOAN NGAT (DEFERRED ISR)",
          "void HAL_GPIO_EXTI_Callback(uint16_t Pin) {\n"
          "  static uint32_t last_tick = 0;\n"
          "  if (Pin == GPIO_PIN_13) {\n"
          "    uint32_t now = HAL_GetTick();\n"
-         "    // Lọc rung phím 300ms\n"
+         "    // Loc rung phim phan mem 300 ms\n"
          "    if ((now - last_tick) > 300U) {\n"
          "      last_tick = now;\n"
-         "      // Nhả Semaphore trong < 1µs\n"
+         "      // Nha Semaphore trong thoi gian <1us\n"
          "      osSemaphoreRelease(feedSemHandle);\n"
          "    }\n"
          "  }\n"
          "}",
-         "Không đặt hàm delay trong ngắt; bàn giao tác vụ nặng cho Thread Context."),
-        ("B. THUẬT TOÁN TÍNH TỔNG CHẠY O(1)",
-         "// Circular Buffer Moving Average\n"
+         "- Triet ly lap trinh: Tuyet doi khong dat ham tre hay xu ly nang trong trinh phuc vu ngat ISR.\n"
+         "- Thoi gian thuc thi ngat chi ton <1 us, ban giao toan bo tac vu nang cho ngu canh tuyen (Thread Context)."),
+        ("B. TINH TONG CHAY O(1) & CHUYEN DOI TDS",
+         "// Circular Buffer Moving Average O(1)\n"
          "tds_sum = tds_sum - ring_buffer[buf_idx];\n"
          "tds_sum = tds_sum + new_raw_adc;\n"
          "ring_buffer[buf_idx] = new_raw_adc;\n"
          "buf_idx = (buf_idx + 1) % 20;\n\n"
-         "float v_adc = (tds_sum / 20.0f) * 3.3f / 4095;\n"
+         "float v_adc  = (tds_sum / 20.0f) * 3.3f / 4095;\n"
          "float v_comp = v_adc / (1.0f + 0.02f * (temp - 25));\n"
-         "tds_ppm = (133.42*v_comp*v_comp*v_comp\n"
-         "          - 255.86*v_comp*v_comp\n"
-         "          + 857.39*v_comp) * 0.5f;",
-         "Chỉ tốn 1 phép cộng, 1 phép trừ; tiết kiệm tối đa chu kỳ CPU STM32."),
-        ("C. MÁY TRẠNG THÁI FSM UART TRÊN ESP32",
-         "// FSM Delimiter '~' Decoder\n"
+         "tds_ppm = (133.42f * v_comp * v_comp * v_comp\n"
+         "          - 255.86f * v_comp * v_comp\n"
+         "          + 857.39f * v_comp) * 0.5f;",
+         "- Toi uu hoa chu ky CPU: Khong dung vong lap for duyet mang; tinh toan da thuc bang phan cung FPU Cortex-M4."),
+        ("C. MAY TRANG THAI GIAI MA KHUNG UART",
+         "// FSM Frame Delimiter '~' Decoder\n"
          "while (SerialSTM32.available()) {\n"
          "  char c = (char)SerialSTM32.read();\n"
          "  if (c == '~') {\n"
@@ -622,12 +580,12 @@ def build_presentation():
          "    rx_buf += c;\n"
          "  }\n"
          "}",
-         "Khử toàn bộ byte rác sinh ra do cắm rút dây hoặc nhiễu điện từ.")
+         "- Tinh toan ven du lieu: May trang thai huu han (FSM) loai bo toan bo byte rac sinh ra do cam rut day hoac nhieu dien tu.")
     ]
 
     for i, (title, code_str, note) in enumerate(code_snippets):
         c_x = Inches(0.8) + i * (col_code_w + Inches(0.3))
-        card = add_card(s8, c_x, Inches(1.8), col_code_w, Inches(5.2))
+        card = add_card(s9, c_x, Inches(1.8), col_code_w, Inches(5.1))
         tf = card.text_frame
         tf.word_wrap = True
         tf.margin_left = tf.margin_right = Inches(0.2)
@@ -636,212 +594,206 @@ def build_presentation():
         p = tf.paragraphs[0]
         p.text = title
         p.font.name = 'Segoe UI'
-        p.font.size = Pt(11)
+        p.font.size = Pt(10.5)
         p.font.bold = True
         p.font.color.rgb = COLOR_TEXT_PRIMARY
 
         p_c = tf.add_paragraph()
         p_c.text = code_str
         p_c.font.name = 'Consolas'
-        p_c.font.size = Pt(8.5)
+        p_c.font.size = Pt(8.2)
         p_c.font.color.rgb = COLOR_TEXT_PRIMARY
         p_c.space_before = Pt(8)
 
         p_n = tf.add_paragraph()
-        p_n.text = f"✔ Ý nghĩa: {note}"
+        p_n.text = note
         p_n.font.name = 'Segoe UI'
-        p_n.font.size = Pt(10)
-        p_n.font.bold = True
-        p_n.font.color.rgb = COLOR_TEXT_PRIMARY
-        p_n.space_before = Pt(12)
+        p_n.font.size = Pt(9.2)
+        p_n.font.color.rgb = COLOR_TEXT_MUTED
+        p_n.space_before = Pt(10)
 
     # =========================================================================
-    # SLIDE 9: [IoT Subsystem]: ESP32 Co-Processor & Telegram Bot Engine
-    # =========================================================================
-    s9 = prs.slides.add_slide(blank_layout)
-    add_header(s9, "Phần 4: Phân Hệ IoT & Kiểm Thử", "PHÂN HỆ IOT ESP32 & NỀN TẢNG TELEGRAM BOT", 
-               "Tính năng nổi bật giúp đề tài đạt trọn vẹn 3.0 điểm Project Complexity trong bảng Rubric")
-
-    # Left: Mechanism & Architecture
-    c_iot1 = add_card(s9, Inches(0.8), Inches(1.8), Inches(5.7), Inches(5.2))
-    tf_iot1 = c_iot1.text_frame
-    tf_iot1.word_wrap = True
-    tf_iot1.margin_left = tf_iot1.margin_right = Inches(0.3)
-    tf_iot1.margin_top = Inches(0.3)
-
-    p = tf_iot1.paragraphs[0]
-    p.text = "KIẾN TRÚC VIỄN THÔNG TELEGRAM BOT"
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
-
-    p = tf_iot1.add_paragraph()
-    p.text = "• Luồng giao tiếp 2 chiều độc lập:\n" \
-             "1. Người dùng gửi lệnh (/feed, /status) qua app Telegram trên điện thoại.\n" \
-             "2. Máy chủ Telegram lưu tạm tin nhắn tại api.telegram.org.\n" \
-             "3. ESP32 mở kết nối bảo mật HTTPS (Port 443), thực hiện Long-Polling lấy tin nhắn về.\n" \
-             "4. ESP32 phát chuỗi định khung ~feed~ qua UART1 (115200 bps) sang STM32 để quay servo.\n" \
-             "5. ESP32 gửi tin nhắn xác nhận: 'Fish feed dispensed successfully!'."
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(10.5)
-    p.font.color.rgb = COLOR_TEXT_MUTED
-    p.space_before = Pt(8)
-
-    p = tf_iot1.add_paragraph()
-    p.text = "• Vì sao chọn Telegram thay vì Zalo / Messenger?\n" \
-             "✔ Hỗ trợ Long-Polling: Chạy trên mọi mạng Wi-Fi và 4G cá nhân, không đòi hỏi IP tĩnh hay mở port router.\n" \
-             "✔ API mở 100% miễn phí, tạo bot trong 30 giây bằng @BotFather."
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(10.5)
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
-    p.space_before = Pt(10)
-
-    # Right: Command & Alert Showcase
-    c_iot2 = add_card(s9, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.2))
-    tf_iot2 = c_iot2.text_frame
-    tf_iot2.word_wrap = True
-    tf_iot2.margin_left = tf_iot2.margin_right = Inches(0.3)
-    tf_iot2.margin_top = Inches(0.3)
-
-    p = tf_iot2.paragraphs[0]
-    p.text = "BỘ LỆNH & TÍNH NĂNG BÁO ĐỘNG TỰ ĐỘNG"
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
-
-    features = [
-        ("Lệnh /status", "Xem thông số thời gian thực", "Trả về: TDS = 142.5 ppm | Temp = 26.2°C | Portion = 4g | Trạng thái: PRISTINE (Lý tưởng)."),
-        ("Lệnh /feed", "Ra lệnh cho ăn từ xa", "ESP32 gửi ~feed~ sang STM32 -> Nắp mở 90° -> Rắc hạt -> Đóng nắp kín chống ẩm."),
-        ("Tự động báo động đỏ", "Push Notification khẩn cấp", "Khi TDS > 500 ppm, ESP32 chủ động bắn tin nhắn về điện thoại kèm icon ⚠ CRITICAL ALERT mà không cần người dùng hỏi."),
-        ("Web Dashboard nội bộ", "Giao diện Web Dark Mode", "Truy cập thẳng vào địa chỉ IP của ESP32 từ trình duyệt điện thoại để theo dõi và bấm nút FEED NOW.")
-    ]
-
-    for f_title, f_sub, f_desc in features:
-        p_f = tf_iot2.add_paragraph()
-        p_f.text = f"• {f_title} ({f_sub}):"
-        p_f.font.name = 'Segoe UI'
-        p_f.font.size = Pt(11)
-        p_f.font.bold = True
-        p_f.font.color.rgb = COLOR_TEXT_PRIMARY
-        p_f.space_before = Pt(8)
-
-        p_fd = tf_iot2.add_paragraph()
-        p_fd.text = f"   {f_desc}"
-        p_fd.font.name = 'Segoe UI'
-        p_fd.font.size = Pt(10)
-        p_fd.font.color.rgb = COLOR_TEXT_MUTED
-
-    # =========================================================================
-    # SLIDE 10: [Validation]: Bench Tests & Performance Benchmarks
+    # SLIDE 10: [Phần 4: IoT & Telegram]: Giao Thức Viễn Thông ESP32 (3.0đ Complexity)
     # =========================================================================
     s10 = prs.slides.add_slide(blank_layout)
-    add_header(s10, "Phần 4: Phân Hệ IoT & Kiểm Thử", "KẾT QUẢ KIỂM THỬ ĐỘC LẬP & ĐO LƯỜNG HIỆU NĂNG THỰC TẾ", 
-               "Minh chứng độ ổn định và tuân thủ các ràng buộc thời gian thực nghiêm ngặt")
+    add_header(s10, "Phan 4: Phan He IoT & Kiem Thu", 
+               "PHAN HE IOT ESP32 & NEN TANG VIEN THONG TELEGRAM BOT", 
+               "Giao thuc dinh khung UART va co che vien thong dam bao dat 3.0 diem Project Complexity trong Rubric")
 
-    # 4 Module Test Summary (Left)
-    c_test = add_card(s10, Inches(0.8), Inches(1.8), Inches(5.7), Inches(5.2))
-    tf_t = c_test.text_frame
-    tf_t.word_wrap = True
-    tf_t.margin_left = tf_t.margin_right = Inches(0.3)
-    tf_t.margin_top = Inches(0.3)
+    # Embedded IoT Protocol Figure
+    fig_iot_path = os.path.join(ASSETS_DIR, "fig_iot_protocol.png")
+    if os.path.exists(fig_iot_path):
+        s10.shapes.add_picture(fig_iot_path, Inches(0.8), Inches(1.65), width=Inches(11.733))
 
-    p = tf_t.paragraphs[0]
-    p.text = "KẾT QUẢ KIỂM THỬ 4 MODULE ĐỘC LẬP"
+    # 2 Bottom Summary Cards
+    c_w10 = Inches(5.7)
+    gap10 = Inches(0.333)
+
+    # Left: Long Polling Mechanism
+    c_iot_l = add_card(s10, Inches(0.8), Inches(4.9), c_w10, Inches(2.25), bg_color=COLOR_CARD_BG, border_color=COLOR_CARD_BORDER)
+    tf_il = c_iot_l.text_frame
+    tf_il.word_wrap = True
+    tf_il.margin_left = Inches(0.25)
+    tf_il.margin_top = Inches(0.18)
+
+    p = tf_il.paragraphs[0]
+    p.text = "1. CO CHE VIEN THONG HTTPS LONG-POLLING"
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(10.5)
+    p.font.bold = True
+    p.font.color.rgb = COLOR_TEXT_PRIMARY
+
+    p = tf_il.add_paragraph()
+    p.text = "- Nguyen ly thuc thi mang:\n" \
+             "  ESP32 duy tri phien ket noi TLS/HTTPS bao mat (Cong 443) toi api.telegram.org thong qua thu vien UniversalTelegramBot. Phuong thuc Long-Polling giu ket noi cho ban tin moi.\n" \
+             "- Uu diem vuot troi:\n" \
+             "  Hoat dong xuyen suot tren moi ha tang mang Wi-Fi va 4G/5G ca nhan ma khong yeu cau cau hinh IP tinh hoac Port Forwarding tren Router."
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(9.5)
+    p.font.color.rgb = COLOR_TEXT_MUTED
+    p.space_before = Pt(4)
+
+    # Right: Command & Push Alert
+    c_iot_r = add_card(s10, Inches(0.8) + c_w10 + gap10, Inches(4.9), c_w10, Inches(2.25), bg_color=COLOR_CARD_BG, border_color=COLOR_CARD_BORDER)
+    tf_ir = c_iot_r.text_frame
+    tf_ir.word_wrap = True
+    tf_ir.margin_left = Inches(0.25)
+    tf_ir.margin_top = Inches(0.18)
+
+    p = tf_ir.paragraphs[0]
+    p.text = "2. DANH MUC LENH DIEU KHIEN & CANH BAO CHU DONG"
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(10.5)
+    p.font.bold = True
+    p.font.color.rgb = COLOR_TEXT_PRIMARY
+
+    p = tf_ir.add_paragraph()
+    p.text = "- Lenh /status: Truy van thong so thoi gian thuc (TDS, Nhiet do, Khau phan, Trang thai an toan).\n" \
+             "- Lenh /feed: Phat chuoi ~feed~ qua UART1 kich hoat Servo xa dung luong thuc an da cai dat.\n" \
+             "- Canh bao day tu dong (Push Notification): Khi nong do TDS vuot nguong 500 ppm, ESP32 chu dong ban tin nhan khan cap ve ung dung dien thoai ma khong can nguoi dung truy van thu cong.\n" \
+             "- Web Dashboard noi bo: Truy cap dia chi IP cuc bo de theo doi tren trinh duyet."
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(9.5)
+    p.font.color.rgb = COLOR_TEXT_MUTED
+    p.space_before = Pt(4)
+
+    # =========================================================================
+    # SLIDE 11: [Phần 4: Kiểm Thử]: Ma Trận Kiểm Thử Kỹ Thuật & Hiệu Năng
+    # =========================================================================
+    s11 = prs.slides.add_slide(blank_layout)
+    add_header(s11, "Phan 4: Phan He IoT & Kiem Thu", 
+               "KET QUA KIEM THU KY THUAT DOC LAP & DO LUONG HIEU NANG", 
+               "Minh chung tinh on dinh va muc do tuan thu cac rang buoc thoi gian thuc nghiem ngat")
+
+    col_t_w = Inches(5.7)
+    gap_t = Inches(0.333)
+
+    # Left: Unit Tests
+    c_test_l = add_card(s11, Inches(0.8), Inches(1.8), col_t_w, Inches(5.1))
+    tf_tl = c_test_l.text_frame
+    tf_tl.word_wrap = True
+    tf_tl.margin_left = tf_tl.margin_right = Inches(0.3)
+    tf_tl.margin_top = Inches(0.3)
+
+    p = tf_tl.paragraphs[0]
+    p.text = "KET QUA KIEM THU 4 MODULE PHAN MEM DOC LAP"
     p.font.name = 'Segoe UI'
     p.font.size = Pt(12)
     p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
 
     t_modules = [
-        ("test_servo_pwm.c", "PWM 50Hz Timer 2", "1.0ms = 0° (đóng kín); 1.5ms = 90° (nhả cám). Dwell time điều chỉnh mượt mà từ 380ms đến 1500ms."),
-        ("test_tds_filter.c", "Bộ lọc số 20 mẫu O(1)", "Khử triệt để dao động do sóng nước; độ lệch chuẩn giảm từ ±65 xuống dưới ±1.5 ppm."),
-        ("test_i2c_scanner.c", "Bus I2C1 quét 127 địa chỉ", "Nhận diện đủ 3 thiết bị: 0x27 (LCD), 0x68 (DS3231), 0x57 (EEPROM). Ghi/đọc thử 0xBEEF khớp 100%."),
-        ("test_uart_bridge.c", "Cầu nối STM32 ↔ ESP32", "Truyền 1000 gói tin liên tục ở tốc độ 115200 bps: Tỷ lệ mất gói 0%, không vỡ khung JSON.")
+        ("test_servo_pwm.c", "Timer 2 PWM 50 Hz", "Do rong xung 1.0 ms = 0° (dong kin); 1.5 ms = 90° (xa thuc an). Thoi gian duy tri Dwell Time dap ung chuan xac tu 380 ms den 1500 ms."),
+        ("test_tds_filter.c", "Bo loc so 20 mau O(1)", "Khu triet de dao dong co hoc do song nuoc; do lech chuan tinh toan giam tu ±45 ppm xuong duoi ±1.5 ppm."),
+        ("test_i2c_scanner.c", "Bus I2C1 quet 127 dia chi", "Nhan dien chinh xac 3 thiet bi: 0x27 (LCD 2004), 0x68 (RTC DS3231), 0x57 (EEPROM AT24C32). Ghi/doc thu gia tri kiem thu khop 100%."),
+        ("test_uart_bridge.c", "Cau noi UART1 115200 bps", "Truyen 1,000 goi tin JSON dinh khung lien tuc: Ty le loi khung (Frame Error Rate) bang 0.0%, khong mat dong bo.")
     ]
 
     for m_file, m_sub, m_res in t_modules:
-        p_m = tf_t.add_paragraph()
-        p_m.text = f"✔ {m_file} ({m_sub}):"
+        p_m = tf_tl.add_paragraph()
+        p_m.text = f"{m_file} ({m_sub}):"
         p_m.font.name = 'Segoe UI'
         p_m.font.size = Pt(10.5)
         p_m.font.bold = True
         p_m.font.color.rgb = COLOR_TEXT_PRIMARY
         p_m.space_before = Pt(8)
 
-        p_mr = tf_t.add_paragraph()
-        p_mr.text = f"   {m_res}"
+        p_mr = tf_tl.add_paragraph()
+        p_mr.text = f"  Ket qua: {m_res}"
         p_mr.font.name = 'Segoe UI'
-        p_mr.font.size = Pt(10)
+        p_mr.font.size = Pt(9.5)
         p_mr.font.color.rgb = COLOR_TEXT_MUTED
 
-    # Performance Benchmarks (Right)
-    c_perf = add_card(s10, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.2))
-    tf_p = c_perf.text_frame
-    tf_p.word_wrap = True
-    tf_p.margin_left = tf_p.margin_right = Inches(0.3)
-    tf_p.margin_top = Inches(0.3)
+    # Right: Latency & Benchmarks
+    c_test_r = add_card(s11, Inches(0.8) + col_t_w + gap_t, Inches(1.8), col_t_w, Inches(5.1))
+    tf_tr = c_test_r.text_frame
+    tf_tr.word_wrap = True
+    tf_tr.margin_left = tf_tr.margin_right = Inches(0.3)
+    tf_tr.margin_top = Inches(0.3)
 
-    p = tf_p.paragraphs[0]
-    p.text = "ĐO LƯỜNG ĐỘ TRỄ & CHIẾM DỤNG TÀI NGUYÊN"
+    p = tf_tr.paragraphs[0]
+    p.text = "DO LUONG DO TRE DAP UNG THOI GIAN THUC"
     p.font.name = 'Segoe UI'
     p.font.size = Pt(12)
     p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
 
-    p = tf_p.add_paragraph()
-    p.text = "• Thời gian đáp ứng hệ thống (Latency Benchmarks):\n" \
-             "  1. Phát hiện ngưỡng TDS nguy hại: 185 ms (Ngưỡng cho phép: 300 ms)\n" \
-             "  2. Độ trễ ngắt nút bấm (EXTI): 0.85 µs (Ngưỡng: 10 µs)\n" \
-             "  3. Thời gian giải phóng Mutex I2C: 4.2 ms (Ngưỡng: 50 ms)\n" \
-             "  4. Độ trễ truyền gói tin UART: 2.8 ms (Ngưỡng: 10 ms)"
+    p = tf_tr.add_paragraph()
+    p.text = "- Thoi gian dap ung he thong (Latency Benchmarks):\n" \
+             "  1. Phat hien vuot nguong TDS nguy hai: 185 ms (Rang buoc an toan: <300 ms)\n" \
+             "  2. Do tre ngat phim bam (EXTI Latency): 0.85 us (Rang buoc ky thuat: <10 us)\n" \
+             "  3. Thoi gian chiem giu va nha Mutex I2C: 4.2 ms (Nguong toi da: <50 ms)\n" \
+             "  4. Do tre truyen goi tin dinh khung UART: 2.8 ms (Nguong cho phep: <10 ms)"
     p.font.name = 'Segoe UI'
     p.font.size = Pt(10)
     p.font.color.rgb = COLOR_TEXT_PRIMARY
     p.space_before = Pt(10)
 
-    p = tf_p.add_paragraph()
-    p.text = "• Chiếm dụng bộ nhớ vi điều khiển (Memory Footprint):\n" \
-             "  1. Bộ nhớ chương trình (Flash ROM): 48.2 KB / 512 KB (Chỉ 9.41%)\n" \
-             "  2. Bộ nhớ dữ liệu tĩnh (SRAM): 12.4 KB / 96 KB (Chỉ 12.92%)\n" \
-             "  3. Bộ nhớ động FreeRTOS (Heap): 4096 Bytes / 8192 Bytes (50% an toàn)\n" \
-             "  => Hệ thống cực kỳ tối ưu, còn hơn 85% tài nguyên cho việc mở rộng cảm biến trong tương lai."
+    p = tf_tr.add_paragraph()
+    p.text = "- Chiem dung tai nguyen vi dieu khien (Resource Footprint):\n" \
+             "  1. Bo nho chuong trinh Flash ROM: 48.2 KB / 512 KB (Chiem 9.41%)\n" \
+             "  2. Bo nho du lieu tinh SRAM: 12.4 KB / 96 KB (Chiem 12.92%)\n" \
+             "  3. Bo nho dong FreeRTOS Heap (Heap_4): 4096 / 8192 Bytes (50.0% an toan)\n" \
+             "  => He thong toi uu, con du tren 85% tai nguyen cho viec tich hop them cam bien pH, Oxy hoa tan trong tuong lai."
     p.font.name = 'Segoe UI'
     p.font.size = Pt(10)
     p.font.color.rgb = COLOR_TEXT_MUTED
     p.space_before = Pt(14)
 
     # =========================================================================
-    # SLIDE 11: [Demo Plan]: 4-Stage Live Demonstration Workflow (1.0đ Rubric)
+    # SLIDE 12: [Phần 5: Quy Trình Trình Diễn]: Kịch Bản Trình Diễn & Tổng Kết (1.0đ Demo & 3.0đ Q&A)
     # =========================================================================
-    s11 = prs.slides.add_slide(blank_layout)
-    add_header(s11, "Phần 5: Trình Diễn & Kết Luận", "KỊCH BẢN TRÌNH DIỄN MÔ HÌNH THỰC TẾ (LIVE DEMO WORKFLOW)", 
-               "Kịch bản diễn tập 4 bước chuẩn mực trong vòng 2 phút ghi điểm tuyệt đối (1.0đ Demonstration)")
+    s12 = prs.slides.add_slide(blank_layout)
+    add_header(s12, "Phan 5: Trinh Dien & Ket Luan", 
+               "QUY TRINH TRINH DIEN MO HINH THUC TE & TONG KET DONG GOP", 
+               "Kich ban kiem chung he thong 4 giai doan phuc vu danh gia Demonstration (1.0 diem) va Van dap Q&A (3.0 diem)")
 
-    demo_steps = [
-        ("BƯỚC 1: KHỞI ĐỘNG HỆ THỐNG (20s)", 
-         "• Thao tác: Cấp nguồn Adapter 9V vào MB102.\n"
-         "• Quan sát màn hình LCD: Hiện lời chào 'Aquatic Guardian 2.0', sau đó cập nhật 4 dòng thông số trực quan.\n"
-         "• Quan sát phần cứng: LED xanh PA5 sáng ổn định, rơ-le nhảy đóng nguồn cho máy bơm nước tuần hoàn."),
-        ("BƯỚC 2: CHO ĂN THỦ CÔNG TẠI CHỖ (30s)", 
-         "• Thao tác: Vặn biến trở PA4 tăng/giảm định lượng (1g–15g), sau đó nhấn nút xanh User Button B1 (PC13).\n"
-         "• Quan sát cơ cấu: Servo SG90 quay 90° mở nắp hộp Tic-Tac, giữ đúng thời gian Dwell Time rồi đóng lại kín.\n"
-         "• Bộ nhớ EEPROM: Bản ghi số lần cho ăn được lưu ngay vào chip AT24C32."),
-        ("BƯỚC 3: ĐIỀU KHIỂN TỪ XA QUA BOT (30s)", 
-         "• Thao tác: Mời thầy cô mở điện thoại gửi lệnh /status và /feed qua Telegram Bot.\n"
-         "• Phản hồi Telegram: Bot báo cáo thông số TDS, Nhiệt độ và Uptime trong vòng dưới 1 giây.\n"
-         "• Phản hồi mô hình: Servo bật mở nhả cám ngay trước mắt hội đồng giảng viên."),
-        ("BƯỚC 4: MÔ PHỎNG SỰ CỐ NƯỚC Ô NHIỄM (40s)", 
-         "• Thao tác: Nhấc đầu dò TDS từ Cốc A (nước sạch 120 ppm) nhúng sang Cốc B (nước muối > 500 ppm).\n"
-         "• Trong vòng 185ms: Còi Buzzer PB0 hú lớn, LED đỏ PB1 nháy liên tục 1Hz, LCD chuyển sang '[!] CRITICAL HAZARD'.\n"
-         "• Điện thoại rung lên nhận tin nhắn cảnh báo đỏ tức thời: ⚠ CRITICAL AQUARIUM ALERT!")
+    coords = [
+        (Inches(0.8), Inches(1.8)), (Inches(6.8), Inches(1.8)),
+        (Inches(0.8), Inches(4.3)), (Inches(6.8), Inches(4.3))
+    ]
+    grid_w = Inches(5.7)
+    grid_h = Inches(2.3)
+
+    demo_stages = [
+        ("GIAI DOAN 1: KHOI DONG & THIET LAP HE THONG", 
+         "- Thao tac: Cap nguon Adapter 9V DC vao mach on ap MB102 tren Breadboard.\n"
+         "- Phan hoi he thong: Man hinh LCD 2004 cap nhat 4 dong thong so thoi gian thuc; LED xanh PA5 sang on dinh; Ro-le 5V dong nguon cap may bom nuoc tuan hoan."),
+        ("GIAI DOAN 2: DINH LUONG CAP DUONG THU CONG TAI CHO", 
+         "- Thao tac: Dieu chinh bien tro B10K PA4 (thay doi dinh luong 1g - 15g), nhan nut User Button PC13.\n"
+         "- Phan hoi he thong: Servo SG90 quay 90° mo nap xa thuc an, duy tri dung Dwell Time roi dong kin; he thong ghi nhat ky vao chip EEPROM AT24C32 qua I2C."),
+        ("GIAI DOAN 3: DIEU KHIEN & TRUY VAN TU XA QUA TELEGRAM", 
+         "- Thao tac: Gui lenh /status va /feed qua ung dung Telegram tren thiet bi di dong.\n"
+         "- Phan hoi he thong: Bot phan hoi bao cao thong so TDS va Nhiet do trong <1s; Servo chap hanh lap tuc mo nap xa thuc an theo lenh vi-en thong."),
+        ("GIAI DOAN 4: MO PHONG SU CO MOI TRUONG NUOC O NHIEM", 
+         "- Thao tac: Di chuyen dau do TDS tu coc nuoc sach sang coc dung dich co nong do ion cao (>500 ppm).\n"
+         "- Phan hoi he thong: Trong vong 185 ms, coi Buzzer PB0 bao dong, LED do PB1 nhay 1 Hz, LCD hien thi 'CRITICAL HAZARD', Telegram tu dong ban tin nhan canh bao khuan cap.")
     ]
 
     for i in range(4):
         c_left, c_top = coords[i]
-        title, body = demo_steps[i]
-        card = add_card(s11, c_left, c_top, grid_w, grid_h)
+        title, body = demo_stages[i]
+        card = add_card(s12, c_left, c_top, grid_w, grid_h)
         tf = card.text_frame
         tf.word_wrap = True
         tf.margin_left = tf.margin_right = Inches(0.25)
@@ -850,198 +802,98 @@ def build_presentation():
         p = tf.paragraphs[0]
         p.text = title
         p.font.name = 'Segoe UI'
-        p.font.size = Pt(11.5)
+        p.font.size = Pt(11)
         p.font.bold = True
         p.font.color.rgb = COLOR_TEXT_PRIMARY
 
         p = tf.add_paragraph()
         p.text = body
         p.font.name = 'Segoe UI'
-        p.font.size = Pt(10)
+        p.font.size = Pt(9.5)
         p.font.color.rgb = COLOR_TEXT_MUTED
         p.space_before = Pt(4)
 
-    # Bottom bar for Failsafe
-    b_demo = add_card(s11, Inches(0.8), Inches(6.75), Inches(11.7), Inches(0.55), bg_color=RGBColor(240, 243, 246))
+    # Bottom bar for GitHub access & Conclusion
+    b_demo = add_card(s12, Inches(0.8), Inches(6.75), Inches(11.733), Inches(0.55), bg_color=COLOR_CARD_DARK_BG, border_color=COLOR_BORDER_SOLID)
     tf_bd = b_demo.text_frame
     tf_bd.word_wrap = True
     tf_bd.margin_left = Inches(0.25)
     tf_bd.margin_top = Inches(0.08)
     p_bd = tf_bd.paragraphs[0]
-    p_bd.text = "⚡ Phương Án Failsafe Dự Phòng: Nếu Wi-Fi phòng thi bị chập chờn, nhóm chuyển sang kênh ST-LINK Virtual COM Port chiếu đồ thị Python trực tiếp lên máy chiếu!"
+    p_bd.text = "[TONG KET & MA NGUON CONG KHAI]: Toan bo thiet ke phan cung, so do mach, ma nguon C FreeRTOS va firmware ESP32 duoc dong goi cong khai tai: https://github.com/Nonne07/mcp201-aquatic-guardian. Nhom san sang buoc vao phan van dap chuyen sau."
     p_bd.font.name = 'Segoe UI'
-    p_bd.font.size = Pt(10)
+    p_bd.font.size = Pt(9.5)
     p_bd.font.bold = True
     p_bd.font.color.rgb = COLOR_TEXT_PRIMARY
 
     # =========================================================================
-    # SLIDE 12: [Conclusion]: Engineering Achievements & QR Bot Access (3.0đ Q&A)
+    # SLIDE 13: [Phụ Lục Kỹ Thuật]: Bản Đồ Bộ Nhớ & Kênh Dự Phòng ST-LINK (0.5đ Rubric)
     # =========================================================================
-    s12 = prs.slides.add_slide(blank_layout)
-    add_header(s12, "Phần 5: Trình Diễn & Kết Luận", "KẾT LUẬN, ĐÓNG GÓP KỸ THUẬT & SẴN SÀNG VẤN ĐÁP (Q&A)", 
-               "Tổng kết thành quả đồ án và kính mời Hội đồng Giảng viên trải nghiệm trực tiếp")
+    s13 = prs.slides.add_slide(blank_layout)
+    add_header(s13, "Phu Luc Ky Thuat (Backup Slide)", 
+               "BAN DO BO NHO HE THONG & KENH VIEN THONG DU PHONG FAILSAFE", 
+               "Tai lieu ky thuat chuyen sau phuc vu phan van dap chuyen mon cua Hoi dong Giang vien (3.0 diem Q&A)")
 
-    # Left: 4 Achievements
-    c_ach = add_card(s12, Inches(0.8), Inches(1.8), Inches(6.8), Inches(5.2))
-    tf_a = c_ach.text_frame
-    tf_a.word_wrap = True
-    tf_a.margin_left = tf_a.margin_right = Inches(0.35)
-    tf_a.margin_top = Inches(0.35)
+    # Embedded Memory Chart Figure (Left)
+    fig_mem_path = os.path.join(ASSETS_DIR, "fig_memory_footprint.png")
+    if os.path.exists(fig_mem_path):
+        s13.shapes.add_picture(fig_mem_path, Inches(0.8), Inches(1.65), width=Inches(5.7))
 
-    p = tf_a.paragraphs[0]
-    p.text = "CÁC KẾT QUẢ ĐÃ HOÀN THÀNH XUẤT SẮC"
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(13)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
+    # Right: Failsafe & Memory Map Details
+    c_ap_r = add_card(s13, Inches(6.8), Inches(1.65), Inches(5.733), Inches(5.35), bg_color=COLOR_CARD_BG, border_color=COLOR_CARD_BORDER)
+    tf_ar = c_ap_r.text_frame
+    tf_ar.word_wrap = True
+    tf_ar.margin_left = tf_ar.margin_right = Inches(0.3)
+    tf_ar.margin_top = Inches(0.25)
 
-    achievements = [
-        ("Làm chủ hệ điều hành FreeRTOS", "Vận hành ổn định 5 tác vụ tiền định dưới CMSIS-RTOS v2; giải quyết dứt điểm hiện tượng chết đói và khóa chết bus I2C."),
-        ("Thiết kế phần cứng không xung đột", "Hoàn thiện 16 đường tín hiệu phần cứng; phân tích và khắc phục thành công 6 vấn đề kỹ thuật phần cứng thực tế."),
-        ("Ứng dụng xử lý tín hiệu số DSP", "Bộ lọc trung bình trượt vòng 20 mẫu thực thi trong thời gian O(1) kết hợp phương trình bậc 3 bù nhiệt độ chính xác."),
-        ("Phân hệ viễn thông kép thông minh", "Tích hợp Telegram Bot, Web Dashboard và duy trì kênh giám sát dự phòng qua cáp ST-LINK VCP.")
-    ]
-
-    for a_title, a_desc in achievements:
-        p_at = tf_a.add_paragraph()
-        p_at.text = f"✔ {a_title}:"
-        p_at.font.name = 'Segoe UI'
-        p_at.font.size = Pt(11)
-        p_at.font.bold = True
-        p_at.font.color.rgb = COLOR_TEXT_PRIMARY
-        p_at.space_before = Pt(8)
-
-        p_ad = tf_a.add_paragraph()
-        p_ad.text = f"   {a_desc}"
-        p_ad.font.name = 'Segoe UI'
-        p_ad.font.size = Pt(10)
-        p_ad.font.color.rgb = COLOR_TEXT_MUTED
-
-    # Right: QR Code & Q&A Callout
-    c_qr = add_card(s12, Inches(7.9), Inches(1.8), Inches(4.6), Inches(5.2), bg_color=RGBColor(245, 247, 250), border_color=COLOR_BORDER_SOLID)
-    tf_q = c_qr.text_frame
-    tf_q.word_wrap = True
-    tf_q.margin_left = tf_q.margin_right = Inches(0.3)
-    tf_q.margin_top = Inches(0.4)
-
-    p = tf_q.paragraphs[0]
-    p.text = "TRẢI NGHIỆM TELEGRAM BOT"
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(13)
-    p.font.bold = True
-    p.font.alignment = PP_ALIGN.CENTER
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
-
-    # Inner Card representing QR
-    c_inner = add_card(s12, Inches(8.8), Inches(2.7), Inches(2.8), Inches(2.5), bg_color=COLOR_BG_WHITE, border_color=COLOR_CARD_BORDER)
-    tf_in = c_inner.text_frame
-    tf_in.margin_top = Inches(0.7)
-    p_in = tf_in.paragraphs[0]
-    p_in.text = "[ MÃ QR BOT ]\nQuét Camera để chat\n@AquaticGuardian_bot"
-    p_in.font.name = 'Segoe UI'
-    p_in.font.size = Pt(11)
-    p_in.font.bold = True
-    p_in.font.alignment = PP_ALIGN.CENTER
-    p_in.font.color.rgb = COLOR_TEXT_MUTED
-
-    p = tf_q.add_paragraph()
-    p.text = "Kính mời Hội đồng Thầy/Cô quét mã QR trên điện thoại để điều khiển mô hình thực tế!"
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(10.5)
-    p.font.alignment = PP_ALIGN.CENTER
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
-    p.space_before = Pt(175)
-
-    p = tf_q.add_paragraph()
-    p.text = "NHÓM 7 XIN TRÂN TRỌNG CẢM ƠN VÀ SẴN SÀNG BƯỚC VÀO PHẦN HỎI ĐÁP (Q&A)!"
+    p = tf_ar.paragraphs[0]
+    p.text = "1. PHAN BO BO NHO CHI TIET (MEMORY FOOTPRINT)"
     p.font.name = 'Segoe UI'
     p.font.size = Pt(11)
     p.font.bold = True
-    p.font.alignment = PP_ALIGN.CENTER
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
-    p.space_before = Pt(10)
-
-    # =========================================================================
-    # SLIDE 13: [Appendix / Backup]: Memory Map & Failsafe PC Telemetry
-    # =========================================================================
-    s13 = prs.slides.add_slide(blank_layout)
-    add_header(s13, "Phụ Lục Kỹ Thuật (Backup Slide)", "BẢN ĐỒ BỘ NHỚ CHI TIẾT & KÊNH GIÁM SÁT DỰ PHÒNG FAILSAFE", 
-               "Tài liệu kỹ thuật dự phòng trả lời các câu hỏi chuyên sâu của Hội đồng Giảng viên")
-
-    c_ap1 = add_card(s13, Inches(0.8), Inches(1.8), Inches(5.7), Inches(5.2))
-    tf_ap1 = c_ap1.text_frame
-    tf_ap1.word_wrap = True
-    tf_ap1.margin_left = tf_ap1.margin_right = Inches(0.3)
-    tf_ap1.margin_top = Inches(0.3)
-
-    p = tf_ap1.paragraphs[0]
-    p.text = "BẢN ĐỒ PHÂN BỔ BỘ NHỚ (MEMORY MAP)"
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(12)
-    p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
 
-    mem_items = [
-        ("Flash ROM (512 KB)", "48.2 KB (9.41%)", "STM32 HAL Drivers, FreeRTOS Kernel, libc math routines, Task functions."),
-        ("SRAM (96 KB)", "12.4 KB (12.92%)", "Global system state struct, Circular Ring Buffers, DMA buffers, .data/.bss."),
-        ("FreeRTOS Heap", "4096 / 8192 Bytes", "Cấu hình Heap_4.c; cấp phát 5 TCBs, 5 Task Stacks, 2 Mutexes, 1 Semaphore, 1 Queue."),
-        ("Stack Watermark", "uxTaskGetStackHighWaterMark()", "Tất cả tác vụ đều còn dư > 35% stack margin an toàn, không có nguy cơ tràn stack.")
-    ]
-
-    for m_t, m_v, m_d in mem_items:
-        p_m = tf_ap1.add_paragraph()
-        p_m.text = f"• {m_t}: {m_v}"
-        p_m.font.name = 'Segoe UI'
-        p_m.font.size = Pt(10.5)
-        p_m.font.bold = True
-        p_m.font.color.rgb = COLOR_TEXT_PRIMARY
-        p_m.space_before = Pt(8)
-
-        p_md = tf_ap1.add_paragraph()
-        p_md.text = f"   {m_d}"
-        p_md.font.name = 'Segoe UI'
-        p_md.font.size = Pt(10)
-        p_md.font.color.rgb = COLOR_TEXT_MUTED
-
-    c_ap2 = add_card(s13, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.2))
-    tf_ap2 = c_ap2.text_frame
-    tf_ap2.word_wrap = True
-    tf_ap2.margin_left = tf_ap2.margin_right = Inches(0.3)
-    tf_ap2.margin_top = Inches(0.3)
-
-    p = tf_ap2.paragraphs[0]
-    p.text = "KÊNH DỰ PHÒNG ST-LINK VIRTUAL COM PORT"
+    p = tf_ar.add_paragraph()
+    p.text = "- Flash ROM (512 KB): 48.2 KB (9.41%)\n" \
+             "  Bao gom STM32 HAL Drivers, FreeRTOS Kernel, libc math routines, Task functions va chuoi dinh dang JSON.\n" \
+             "- Static RAM (96 KB): 12.4 KB (12.92%)\n" \
+             "  Bao gom bien toan cuc, Circular Buffers, DMA Descriptors va cac vung nho .data/.bss.\n" \
+             "- FreeRTOS Heap (Heap_4): Cung cap 4096 / 8192 Bytes cho 5 Task Control Blocks (TCB), 5 Task Stacks, 2 Mutexes va 1 Semaphore.\n" \
+             "- Stack Watermark: Kiem tra bang ham uxTaskGetStackHighWaterMark() xac nhan tat ca tac vu deu con du >35% bien do an toan, hoan toan khong co nguy co tran stack."
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = COLOR_TEXT_PRIMARY
-
-    p = tf_ap2.add_paragraph()
-    p.text = "• Nguyên lý vận hành:\nCặp chân PA2/PA3 trên bo mạch Nucleo được nhà sản xuất nối cứng với chip nạp ST-LINK/V2-1. Tín hiệu USART2 được cầu phần cứng chuyển thành cổng USB Virtual COM Port (VCP) kết nối thẳng vào laptop."
-    p.font.name = 'Segoe UI'
-    p.font.size = Pt(10)
+    p.font.size = Pt(9.5)
     p.font.color.rgb = COLOR_TEXT_MUTED
-    p.space_before = Pt(8)
+    p.space_before = Pt(4)
 
-    p = tf_ap2.add_paragraph()
-    p.text = "• Script Python độc lập (scripts/aquatic_pc_bridge.py):\n✔ Tự động quét và kết nối cổng COM ở baudrate 115200 bps.\n✔ Giải mã luồng JSON phát ra từ Task_Telemetry.\n✔ Vẽ đồ thị thời gian thực TDS và Nhiệt độ hiển thị lên máy chiếu mà không cần bất kỳ kết nối mạng Wi-Fi nào."
+    p = tf_ar.add_paragraph()
+    p.text = "2. KENH GIAM SAT DU PHONG ST-LINK VIRTUAL COM PORT"
     p.font.name = 'Segoe UI'
-    p.font.size = Pt(10)
+    p.font.size = Pt(11)
+    p.font.bold = True
     p.font.color.rgb = COLOR_TEXT_PRIMARY
-    p.space_before = Pt(10)
+    p.space_before = Pt(12)
+
+    p = tf_ar.add_paragraph()
+    p.text = "- Nguyen ly phan cung:\n" \
+             "  Cap chan PA2/PA3 tren bo Nucleo-64 duoc noi truc tiep toi chip nap ST-LINK/V2-1. Tin hieu USART2 duoc chip cau chuyen doi thanh cong USB Virtual COM Port (VCP) ket noi truc tiep vao may tinh.\n" \
+             "- Script Python doc lap (scripts/aquatic_pc_bridge.py):\n" \
+             "  Tiep nhan luong du lieu JSON tu Task_Telemetry o baudrate 115200 bps va ve do thi thoi gian thuc tren man hinh may tinh, dam bao he thong luon co kenh giam sat doc lap khi ha tang Wi-Fi gap su co."
+    p.font.name = 'Segoe UI'
+    p.font.size = Pt(9.5)
+    p.font.color.rgb = COLOR_TEXT_MUTED
+    p.space_before = Pt(4)
 
     # Save presentation
     out_pptx = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\AQUATIC_GUARDIAN_SLIDES.pptx"
-    prs.save(out_pptx)
-    print(f"[SUCCESS] Official presentation slides generated at: {out_pptx}")
+    out_new  = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\AQUATIC_GUARDIAN_SLIDES_NEW.pptx"
+    try:
+        prs.save(out_pptx)
+        print(f"[SUCCESS] Updated presentation slides generated at: {out_pptx}")
+    except PermissionError:
+        prs.save(out_new)
+        print(f"[WARNING] {out_pptx} is locked by PowerPoint. Saved to: {out_new}")
+        print("Please close PowerPoint so the main file can be updated.")
 
-def set_cell_background(cell, hex_color):
-    """Sets background color of a PPT table cell."""
-    cell.fill.solid()
-    r = int(hex_color[0:2], 16)
-    g = int(hex_color[2:4], 16)
-    b = int(hex_color[4:6], 16)
-    cell.fill.fore_color.rgb = RGBColor(r, g, b)
 
 if __name__ == '__main__':
     build_presentation()
