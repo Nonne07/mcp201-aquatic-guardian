@@ -117,7 +117,7 @@ def build_presentation():
     tf_l.margin_top = Inches(0.5)
 
     p = tf_l.paragraphs[0]
-    p.text = "TRƯỜNG ĐẠI HỌC FPT • KHOA ĐIỆN TỬ - VIỄN THÔNG"
+    p.text = "TRƯỜNG ĐẠI HỌC FPT • KHOA VI MẠCH BÁN DẪN & Ô TÔ SỐ"
     p.font.name = 'Segoe UI'
     p.font.size = Pt(10)
     p.font.bold = True

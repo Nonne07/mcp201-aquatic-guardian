@@ -2,10 +2,12 @@
 =============================================================================
 Project: Aquatic Guardian - Capstone MCP201
 Script: generate_docx_report.py
-Purpose: Generates the official Microsoft Word report (.docx) complying
-         strictly with '20141225-Huong dan trinh bay DATN.doc'
-         and the instructor's reminder ('Lam tu muc luc tro xuong thoi').
-Style:   Professional Monochrome / Colorless Academic Design for Thesis Printing
+Purpose: Generates the official, publication-grade academic report (.docx)
+         with a complete formal structure (Outer Cover, Inner Cover,
+         Assignment Sheet, Project Rubric, Declaration, Acknowledgments,
+         Abstract, Table of Contents, Chapters 1-5, References, Appendices,
+         and Teacher Review Sheet) and exports it directly to PDF.
+Style:   Professional Monochrome Academic Design for Thesis Printing
 =============================================================================
 """
 
@@ -37,7 +39,7 @@ def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
     tcPr.append(tcMar)
 
 def set_table_borders(table, color="808080", sz="4", val="single"):
-    """Applies clean outer border to a table in neutral monochrome tone."""
+    """Applies subtle monochrome borders to a table."""
     tblPr = table._tbl.tblPr
     tblBorders = parse_xml(
         f'<w:tblBorders {nsdecls("w")}>\n'
@@ -45,8 +47,8 @@ def set_table_borders(table, color="808080", sz="4", val="single"):
         f'  <w:left w:val="{val}" w:sz="{sz}" w:space="0" w:color="{color}"/>\n'
         f'  <w:bottom w:val="{val}" w:sz="{sz}" w:space="0" w:color="{color}"/>\n'
         f'  <w:right w:val="{val}" w:sz="{sz}" w:space="0" w:color="{color}"/>\n'
-        f'  <w:insideH w:val="none"/>\n'
-        f'  <w:insideV w:val="none"/>\n'
+        f'  <w:insideH w:val="{val}" w:sz="{sz}" w:space="0" w:color="{color}"/>\n'
+        f'  <w:insideV w:val="{val}" w:sz="{sz}" w:space="0" w:color="{color}"/>\n'
         f'</w:tblBorders>'
     )
     tblPr.append(tblBorders)
@@ -64,7 +66,7 @@ def add_hyperlink(paragraph, url, text, is_code=False, is_bold=False):
     hyperlink = parse_xml(f'<w:hyperlink {nsdecls("w", "r")} r:id="{r_id}" w:history="1"/>')
     
     font_name = 'Consolas' if is_code else 'Times New Roman'
-    sz_val = "23" if is_code else "26" # 11.5pt vs 13pt
+    sz_val = "23" if is_code else "26"
     bold_tag = '<w:b/>' if is_bold else ''
     
     r_xml = (
@@ -90,7 +92,6 @@ def add_formula_box(doc, formula_text, eq_number=""):
     table.autofit = False
     set_table_borders(table, color="707070", sz="4", val="single")
 
-    # Left cell: Math formula (width ~ 13.2 cm)
     cell_form = table.cell(0, 0)
     cell_form.width = Cm(13.2)
     set_cell_background(cell_form, "FAFAFA")
@@ -100,7 +101,6 @@ def add_formula_box(doc, formula_text, eq_number=""):
     p_form.paragraph_format.space_before = Pt(3)
     p_form.paragraph_format.space_after = Pt(3)
 
-    # Tokenize formula for subscripts, superscripts and regular math symbols
     pattern = re.compile(r'_([a-zA-Z0-9]+|\([^)]+\))|\^([a-zA-Z0-9]+|\([^)]+\))|([^_^\n]+)')
     for m in pattern.finditer(formula_text):
         sub_val = m.group(1)
@@ -127,7 +127,6 @@ def add_formula_box(doc, formula_text, eq_number=""):
             r.font.italic = True
             r.font.color.rgb = RGBColor(0, 0, 0)
 
-    # Right cell: Equation number (width ~ 2.3 cm)
     cell_num = table.cell(0, 1)
     cell_num.width = Cm(2.3)
     set_cell_background(cell_num, "FAFAFA")
@@ -260,53 +259,614 @@ def clean_latex_artifacts(text):
     text = text.replace(r'$X_{\text{filtered}}$', 'X_filtered')
     return text
 
-def build_report():
-    doc = Document()
+def add_front_cover_page(doc):
+    """Builds the formal Outer Cover Page with academic double border."""
+    sec = doc.sections[0]
+    sec.page_width = Cm(21.0)
+    sec.page_height = Cm(29.7)
+    sec.top_margin = Cm(2.5)
+    sec.bottom_margin = Cm(2.5)
+    sec.left_margin = Cm(3.0)
+    sec.right_margin = Cm(2.5)
 
-    # Configure A4 Page Margins as per guidelines
-    # Margins: Left=3.0cm, Right=2.5cm, Top=2.5cm, Bottom=3.0cm
-    section = doc.sections[0]
-    section.page_width = Cm(21.0)
-    section.page_height = Cm(29.7)
-    section.top_margin = Cm(2.5)
-    section.bottom_margin = Cm(3.0)
-    section.left_margin = Cm(3.0)
-    section.right_margin = Cm(2.5)
+    # Double border frame on Cover Section
+    pgBorders = parse_xml(
+        f'<w:pgBorders {nsdecls("w")} w:offsetFrom="page">\n'
+        f'  <w:top w:val="double" w:sz="12" w:space="24" w:color="000000"/>\n'
+        f'  <w:left w:val="double" w:sz="12" w:space="24" w:color="000000"/>\n'
+        f'  <w:bottom w:val="double" w:sz="12" w:space="24" w:color="000000"/>\n'
+        f'  <w:right w:val="double" w:sz="12" w:space="24" w:color="000000"/>\n'
+        f'</w:pgBorders>'
+    )
+    sec._sectPr.append(pgBorders)
 
-    # Configure footer page numbering (Bottom, Center)
-    footer = section.footer
+    # Header University Info
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(12)
+    p.paragraph_format.space_after = Pt(2)
+    r = p.add_run("BỘ GIÁO DỤC VÀ ĐÀO TẠO\nTRƯỜNG ĐẠI HỌC FPT")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(14)
+    r.font.bold = True
+
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(2)
+    p.paragraph_format.space_after = Pt(18)
+    r = p.add_run("KHOA VI MẠCH BÁN DẪN & Ô TÔ SỐ\n-----------------------***-----------------------")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(12)
+    r.font.bold = True
+
+    # Report Category
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(36)
+    p.paragraph_format.space_after = Pt(6)
+    r = p.add_run("BÁO CÁO ĐỒ ÁN TỐT NGHIỆP HỌC PHẦN\nLẬP TRÌNH VI ĐIỀU KHIỂN (MCP201)")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(15)
+    r.font.bold = True
+
+    # Project Title
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(32)
+    p.paragraph_format.space_after = Pt(8)
+    r = p.add_run("ĐỀ TÀI:")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(14)
+    r.font.bold = True
+
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(10)
+    r = p.add_run("AQUATIC GUARDIAN")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(24)
+    r.font.bold = True
+
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(2)
+    p.paragraph_format.space_after = Pt(40)
+    r = p.add_run("HỆ THỐNG NHÚNG THÔNG MINH GIÁM SÁT CHẤT LƯỢNG NƯỚC\nVÀ CHO ĂN TỰ ĐỘNG THỜI GIAN THỰC")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(14)
+    r.font.bold = True
+
+    # Student Info Header
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p.paragraph_format.left_indent = Cm(2.2)
+    p.paragraph_format.space_before = Pt(40)
+    p.paragraph_format.space_after = Pt(10)
+    r = p.add_run("SINH VIÊN THỰC HIỆN:    LỚP IC2005 — NHÓM 7")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(13)
+    r.font.bold = True
+
+    team_members = [
+        ("1.  Nghiêm Hoàng Tùng", "MSSV: SE211196", "(Trưởng nhóm)"),
+        ("2.  Hoàng Đức Mạnh", "MSSV: SE211191", "(Thành viên)"),
+        ("3.  Đỗ Khắc Lê Gia", "MSSV: SE211559", "(Thành viên)"),
+        ("4.  Phạm Hồng Minh", "MSSV: SE211181", "(Thành viên)"),
+        ("5.  Nguyễn Đức Anh", "MSSV: SE211485", "(Thành viên)")
+    ]
+
+    table_team = doc.add_table(rows=5, cols=3)
+    table_team.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table_team.autofit = False
+
+    tblPr = table_team._tbl.tblPr
+    tblBorders = parse_xml(
+        f'<w:tblBorders {nsdecls("w")}>\n'
+        f'  <w:top w:val="none"/>\n'
+        f'  <w:left w:val="none"/>\n'
+        f'  <w:bottom w:val="none"/>\n'
+        f'  <w:right w:val="none"/>\n'
+        f'  <w:insideH w:val="none"/>\n'
+        f'  <w:insideV w:val="none"/>\n'
+        f'</w:tblBorders>'
+    )
+    tblPr.append(tblBorders)
+
+    # Indent table 2.2 cm from left margin to align with header
+    tblInd = parse_xml(f'<w:tblInd {nsdecls("w")} w:w="1247" w:type="dxa"/>')
+    tblPr.append(tblInd)
+
+    col_widths = [Cm(6.0), Cm(4.0), Cm(3.2)]
+    for r_idx, (m_name, m_mssv, m_role) in enumerate(team_members):
+        row = table_team.rows[r_idx]
+        for c_idx, val in enumerate([m_name, m_mssv, m_role]):
+            cell = row.cells[c_idx]
+            cell.width = col_widths[c_idx]
+            set_cell_margins(cell, top=35, bottom=35, left=40, right=40)
+            p_cell = cell.paragraphs[0]
+            p_cell.paragraph_format.space_before = Pt(0)
+            p_cell.paragraph_format.space_after = Pt(0)
+            p_cell.paragraph_format.line_spacing = 1.2
+            p_cell.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            r_c = p_cell.add_run(val)
+            r_c.font.name = 'Times New Roman'
+            r_c.font.size = Pt(12.5)
+
+def add_assignment_and_rubric_page(doc):
+    """Builds the official Project Assignment & Assessment Rubric page."""
+    # Add Section 2 for Front Matter (Roman numerals i, ii, iii...)
+    sec2 = doc.add_section()
+    sec2.footer.is_linked_to_previous = False
+    sec2.top_margin = Cm(2.5)
+    sec2.bottom_margin = Cm(2.5)
+    sec2.left_margin = Cm(3.0)
+    sec2.right_margin = Cm(2.5)
+    sectPr2 = sec2._sectPr
+    pgNumType2 = parse_xml(f'<w:pgNumType {nsdecls("w")} w:start="1" w:fmt="lowerRoman"/>')
+    sectPr2.append(pgNumType2)
+
+    footer = sec2.footer
     f_p = footer.paragraphs[0]
     f_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     f_run = f_p.add_run()
     f_run.font.name = 'Times New Roman'
     f_run.font.size = Pt(11)
-    f_run.font.color.rgb = RGBColor(0, 0, 0)
     add_page_number(f_run)
 
-    # Set base Normal Style (Monochrome / Colorless)
-    style_normal = doc.styles['Normal']
-    style_normal.font.name = 'Times New Roman'
-    style_normal.font.size = Pt(13)
-    style_normal.font.color.rgb = RGBColor(0, 0, 0)
-    style_normal.paragraph_format.line_spacing = 1.5
-    style_normal.paragraph_format.space_before = Pt(6)
-    style_normal.paragraph_format.space_after = Pt(4)
-    style_normal.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    # Heading
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(10)
+    p.paragraph_format.space_after = Pt(4)
+    r = p.add_run("PHIẾU GIAO NHIỆM VỤ ĐỒ ÁN VÀ ĐÁNH GIÁ KẾT QUẢ")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(15)
+    r.font.bold = True
 
-    # Read the master markdown content
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(0)
+    p.paragraph_format.space_after = Pt(12)
+    r = p.add_run("HỌC PHẦN: LẬP TRÌNH VI ĐIỀU KHIỂN (MCP201) — HỌC KỲ FALL 2026")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(12)
+    r.font.bold = True
+
+    # Info summary
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.line_spacing = 1.3
+    r = p.add_run("1. Tên đề tài: ")
+    r.font.bold = True
+    p.add_run("Aquatic Guardian (Hệ Thống Nhúng Thông Minh Giám Sát Nước & Cho Ăn Tự Động)\n")
+    r = p.add_run("2. Nhóm sinh viên thực hiện: ")
+    r.font.bold = True
+    p.add_run("Nhóm 7 — Lớp IC2005 (5 sinh viên: Nghiêm Hoàng Tùng, Hoàng Đức Mạnh, Đỗ Khắc Lê Gia, Phạm Hồng Minh, Nguyễn Đức Anh)\n")
+    r = p.add_run("3. Nền tảng kỹ thuật: ")
+    r.font.bold = True
+    p.add_run("STM32F401RE Nucleo-64 (ARM Cortex-M4), FreeRTOS (CMSIS-RTOS v2), Module Wi-Fi ESP32 IoT Bridge.")
+
+    # 5 Specific Engineering Tasks
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(8)
+    p.paragraph_format.space_after = Pt(2)
+    r = p.add_run("4. Các nhiệm vụ kỹ thuật cụ thể đã giao và hoàn thành:")
+    r.font.bold = True
+
+    tasks = [
+        ("Nhiệm vụ 1", "Thiết kế mạch phần cứng không xung đột chân, xử lý sụt áp MB102, cách ly pin RTC và đệm transistor còi."),
+        ("Nhiệm vụ 2", "Xây dựng hệ thống đa nhiệm tiền định FreeRTOS gồm 5 tác vụ độc lập, phân bổ stack an toàn chuẩn CMSIS-RTOS v2."),
+        ("Nhiệm vụ 3", "Nghiên cứu và hiện thực hóa thuật toán lọc số trung vị/trung bình trượt O(1) và mô hình đa thức bậc 3 bù nhiệt độ TDS."),
+        ("Nhiệm vụ 4", "Thiết kế giao thức định khung UART '~' hai chiều, tích hợp module ESP32 kết nối Telegram Bot và Web Dashboard."),
+        ("Nhiệm vụ 5", "Kiểm thử thực nghiệm độc lập 4 module, đo lường độ trễ thời gian thực và xây dựng kênh giám sát dự phòng ST-LINK VCP.")
+    ]
+    for t_id, t_desc in tasks:
+        p_t = doc.add_paragraph()
+        p_t.paragraph_format.left_indent = Cm(0.8)
+        p_t.paragraph_format.space_before = Pt(1)
+        p_t.paragraph_format.space_after = Pt(1)
+        r = p_t.add_run(f"• {t_id}: ")
+        r.font.bold = True
+        p_t.add_run(t_desc)
+
+    # 10.0-Point Rubric Table
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(10)
+    p.paragraph_format.space_after = Pt(4)
+    r = p.add_run("5. Bảng Tiêu Chí Đánh Giá Đồ Án (Project Assessment Rubric — Thang Điểm 10.0):")
+    r.font.bold = True
+
+    rubric_data = [
+        ("No.", "Assessment criteria", "Description", "Points"),
+        ("1", "Final report", "Assessment of the submitted final report", "1.0"),
+        ("2", "Project evaluation", "", ""),
+        ("", "Project complexity", "Projects using ESP, HM-10, or similar additional hardware/comm modules", "3.0"),
+        ("", "Presentation", "Evaluation of the oral presentation", "1.0"),
+        ("", "Block diagram", "Analysis of the operational principle of the system depicted in the diagram", "0.5"),
+        ("", "Circuit analysis & assembly", "Evaluation of students' comprehension of their project's execution", "0.5"),
+        ("", "Flowchart", "Evaluation of the system programming depicted in the flowchart", "0.5"),
+        ("", "Source code analysis", "Evaluation of students' comprehension of their project's execution", "0.5"),
+        ("", "Demonstration", "Assessment of how well the system operates according to intended design", "1.0"),
+        ("3", "Q&A", "Evaluation of students' comprehension of their project's execution (Oral defense)", "3.0"),
+        ("", "TỔNG CỘNG", "Thang điểm tối đa đối với đồ án có module truyền thông ngoài (ESP32)", "10.0 / 10.0")
+    ]
+
+    tbl = doc.add_table(rows=len(rubric_data), cols=4)
+    tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(tbl, color="707070", sz="4", val="single")
+
+    col_widths = [Cm(1.2), Cm(4.5), Cm(8.0), Cm(2.0)]
+    for r_idx, row in enumerate(rubric_data):
+        for c_idx, val in enumerate(row):
+            cell = tbl.cell(r_idx, c_idx)
+            cell.width = col_widths[c_idx]
+            set_cell_margins(cell, top=80, bottom=80, left=100, right=100)
+            p_c = cell.paragraphs[0]
+            p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER if c_idx in [0, 3] else WD_ALIGN_PARAGRAPH.LEFT
+            r = p_c.add_run(val)
+            r.font.name = 'Times New Roman'
+            r.font.size = Pt(10)
+            if r_idx == 0 or r_idx == len(rubric_data) - 1 or c_idx == 0 or "complexity" in val:
+                r.font.bold = True
+            if r_idx == 0:
+                set_cell_background(cell, "EAEAEA")
+            elif r_idx == len(rubric_data) - 1:
+                set_cell_background(cell, "F0F0F0")
+
+    # Signature lines
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(16)
+    p.paragraph_format.space_after = Pt(0)
+    p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    r = p.add_run("Ngày      tháng 11 năm 2026\nGIẢNG VIÊN HƯỚNG DẪN / CHẤM THI\n\n\n\n(Ký và ghi rõ họ tên)                      ")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(11)
+    r.font.italic = True
+
+def add_declaration_and_acknowledgments_page(doc):
+    """Builds the Student Declaration and Acknowledgments pages."""
+    doc.add_page_break()
+
+    # Lời Cam Đoan
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(16)
+    p.paragraph_format.space_after = Pt(12)
+    r = p.add_run("LỜI CAM ĐOAN")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(15)
+    r.font.bold = True
+
+    p = doc.add_paragraph()
+    p.paragraph_format.line_spacing = 1.5
+    p.paragraph_format.space_before = Pt(6)
+    p.paragraph_format.space_after = Pt(6)
+    p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    r = p.add_run(
+        "Chúng tôi xin cam đoan đề tài đồ án tốt nghiệp học phần: \"AQUATIC GUARDIAN — HỆ THỐNG NHÚNG THÔNG MINH "
+        "GIÁM SÁT CHẤT LƯỢNG NƯỚC VÀ CHO ĂN TỰ ĐỘNG THỜI GIAN THỰC\" là công trình nghiên cứu và thực hiện độc lập của Nhóm 7 (Lớp IC2005) "
+        "dưới sự hướng dẫn chuyên môn của các thầy cô trong Hội đồng Bộ môn Lập trình Vi điều khiển (MCP201), Trường Đại học FPT.\n\n"
+        "Toàn bộ các số liệu đo đạc thực nghiệm, sơ đồ khối kiến trúc, mạch điện phân tích và toàn văn mã nguồn C FreeRTOS / ESP32 "
+        "được trình bày trong báo cáo này là trung thực, minh bạch và không sao chép từ bất kỳ công trình nào chưa được trích dẫn. "
+        "Các nguồn tài liệu tham khảo khoa học, thư viện mã nguồn mở và nền tảng kế thừa đều được ghi chú rõ ràng theo đúng tiêu chuẩn trích dẫn học thuật IEEE.\n\n"
+        "Nếu có bất kỳ sự gian lận hay vi phạm liêm chính học thuật nào, nhóm chúng tôi xin chịu hoàn toàn trách nhiệm trước Hội đồng chấm thi và Nhà trường."
+    )
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(13)
+
+    # Signature Block for 5 Members
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(18)
+    p.paragraph_format.space_after = Pt(4)
+    p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    r = p.add_run("Ngày 14 tháng 11 năm 2026\nĐẠI DIỆN NHÓM SINH VIÊN THỰC HIỆN\n\n\n\nNghiêm Hoàng Tùng (Trưởng nhóm)")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(12)
+    r.font.bold = True
+
+    # Lời Cảm Ơn
+    doc.add_page_break()
+
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(16)
+    p.paragraph_format.space_after = Pt(12)
+    r = p.add_run("LỜI CẢM ƠN")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(15)
+    r.font.bold = True
+
+    p = doc.add_paragraph()
+    p.paragraph_format.line_spacing = 1.5
+    p.paragraph_format.space_before = Pt(6)
+    p.paragraph_format.space_after = Pt(6)
+    p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    r = p.add_run(
+        "Lời đầu tiên, Nhóm 7 xin trân trọng gửi lời cảm ơn sâu sắc nhất tới Ban Giám hiệu Trường Đại học FPT, Ban Chủ nhiệm Khoa Vi mạch Bán dẫn & Ô tô số, "
+        "cùng toàn thể quý thầy cô giảng viên Bộ môn Lập trình Vi điều khiển (MCP201) đã trang bị cho chúng tôi những nền tảng kiến thức chuyên môn vững chắc, "
+        "từ kiến trúc vi xử lý ARM Cortex-M4, nguyên lý hệ điều hành thời gian thực FreeRTOS, kỹ thuật thiết kế phần cứng cho tới tư duy giải quyết vấn đề kỹ thuật thực tế.\n\n"
+        "Đặc biệt, nhóm xin chân thành cảm ơn thầy/cô giảng viên trực tiếp hướng dẫn học phần MCP201 đã luôn dành thời gian giải đáp các vướng mắc, "
+        "định hướng phương pháp tiếp cận đúng đắn trong quá trình thiết kế sơ đồ không xung đột chân, xử lý sụt áp nguồn và tối ưu hóa các luồng dữ liệu liên tác vụ.\n\n"
+        "Dù nhóm đã nỗ lực hết mình để hoàn thiện hệ thống và cuốn báo cáo một cách khoa học, chỉn chu nhất, song do giới hạn về thời gian và kinh nghiệm thực tiễn, "
+        "đồ án khó tránh khỏi những điểm thiếu sót nhất định. Nhóm rất mong nhận được những nhận xét, góp ý quý báu từ quý thầy cô trong Hội đồng chấm thi để đề tài được hoàn thiện tốt hơn.\n\n"
+        "Nhóm xin kính chúc quý thầy cô luôn dồi dào sức khỏe, hạnh phúc và gặt hái được nhiều thành công trong sự nghiệp giáo dục đào tạo!"
+    )
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(13)
+
+def add_abstract_page(doc):
+    """Builds the Bilingual Abstract page (Vietnamese & English)."""
+    doc.add_page_break()
+
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(14)
+    p.paragraph_format.space_after = Pt(10)
+    r = p.add_run("TÓM TẮT ĐỒ ÁN")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(15)
+    r.font.bold = True
+
+    p = doc.add_paragraph()
+    p.paragraph_format.line_spacing = 1.4
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(4)
+    p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    r = p.add_run(
+        "Đồ án \"Aquatic Guardian\" nghiên cứu và chế tạo thành công một hệ thống nhúng thông minh, hoạt động tự động thời gian thực "
+        "nhằm giải quyết triệt để hai nguyên nhân chính gây tử vong ở sinh vật thủy sinh: sai lệch chu kỳ dinh dưỡng và ô nhiễm nguồn nước ngầm. "
+        "Hệ thống ứng dụng kiến trúc phân tán hai vi điều khiển (Distributed Dual-MCU): vi điều khiển STM32F401RE (ARM Cortex-M4 @ 84 MHz) "
+        "vận hành hệ điều hành FreeRTOS (CMSIS-RTOS v2) đảm nhận 5 tác vụ tiền định thời gian thực; và vi điều khiển ESP32 đóng vai trò Co-Processor "
+        "xử lý truyền thông Wi-Fi, tích hợp giao diện điều khiển qua Telegram Bot và Web Dashboard nội bộ.\n\n"
+        "Về mặt thuật toán, hệ thống áp dụng bộ lọc trung bình trượt vòng 20 mẫu thực thi trong thời gian O(1) kết hợp phương trình bậc 3 bù nhiệt độ "
+        "giúp giảm 96.7% phương sai dao động cảm biến TDS (độ lệch chuẩn giảm từ ±45 ppm xuống dưới ±1.5 ppm). Về mặt đồng bộ hóa, cơ chế hòm thư Length-1 Mailbox "
+        "và cơ chế thừa kế quyền ưu tiên (Priority Inheritance) trên bus I2C1 triệt tiêu hoàn toàn hiện tượng chết đói dữ liệu và khóa chết hệ thống. "
+        "Kết quả thực nghiệm chứng minh độ trễ phát hiện sự cố đạt 185 ms (thỏa mãn ràng buộc <300 ms), độ trễ ngắt nút bấm đạt 0.85 µs, trong khi chiếm dụng bộ nhớ "
+        "chỉ 9.41% Flash ROM và 12.92% SRAM, khẳng định tính ổn định cao và sẵn sàng cho việc mở rộng cảm biến trong tương lai."
+    )
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(12)
+
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(16)
+    r = p.add_run("Từ khóa: ")
+    r.font.bold = True
+    p.add_run("STM32, FreeRTOS, CMSIS-RTOS v2, ESP32, Telegram Bot, Cảm biến TDS, Xử lý tín hiệu số DSP, Thời gian thực.")
+
+    # English Abstract
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(12)
+    p.paragraph_format.space_after = Pt(10)
+    r = p.add_run("PROJECT ABSTRACT")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(15)
+    r.font.bold = True
+
+    p = doc.add_paragraph()
+    p.paragraph_format.line_spacing = 1.4
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(4)
+    p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    r = p.add_run(
+        "The \"Aquatic Guardian\" capstone project presents an autonomous, real-time embedded life-support system designed to eliminate "
+        "the primary risks of aquatic mortality: irregular feeding cycles and undetected water toxicity or thermal spikes. "
+        "The system leverages a distributed dual-microcontroller architecture: an STM32F401RE (ARM Cortex-M4 @ 84 MHz) running FreeRTOS "
+        "(CMSIS-RTOS v2) executes 5 deterministic real-time tasks, while an ESP32 co-processor handles Wi-Fi connectivity, Telegram Bot interaction, "
+        "and a local responsive Web Dashboard over a robust framed UART protocol.\n\n"
+        "Algorithmically, a 20-sample circular moving sum filter running in O(1) time complexity combined with temperature-compensated cubic polynomial "
+        "reduces ADC noise variance by 96.7% (standard deviation from ±45 ppm to under ±1.5 ppm). Inter-task communication implements a length-1 mailbox "
+        "and Priority Inheritance on the shared I2C1 bus, eliminating data starvation and unbounded priority inversion. Benchmark evaluations verify "
+        "hazard detection latency of 185 ms (exceeding the <300 ms deadline) and EXTI button latency of 0.85 µs, with an ultra-lean footprint of "
+        "9.41% Flash ROM and 12.92% SRAM, demonstrating deterministic reliability and robust academic rigor."
+    )
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(12)
+
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(10)
+    r = p.add_run("Keywords: ")
+    r.font.bold = True
+    p.add_run("STM32, FreeRTOS, CMSIS-RTOS v2, ESP32, Telegram Bot, Water Quality TDS, DSP Filtering, Real-Time Embedded Systems.")
+
+def add_teacher_review_sheet(doc):
+    """Builds the Final Review & Grading Sheet for the Examiner Committee."""
+    doc.add_page_break()
+
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_before = Pt(14)
+    p.paragraph_format.space_after = Pt(6)
+    r = p.add_run("NHẬN XÉT VÀ ĐÁNH GIÁ CỦA HỘI ĐỒNG CHẤM THI")
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(15)
+    r.font.bold = True
+
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(6)
+    p.paragraph_format.space_after = Pt(4)
+    p.paragraph_format.line_spacing = 1.3
+    r = p.add_run("1. Đề tài: ")
+    r.font.bold = True
+    p.add_run("Aquatic Guardian — Hệ Thống Nhúng Thông Minh Giám Sát Nước & Cho Ăn Tự Động Thời Gian Thực\n")
+    r = p.add_run("2. Nhóm sinh viên: ")
+    r.font.bold = True
+    p.add_run("Nhóm 7 (Lớp IC2005) — 5 thành viên\n")
+    r = p.add_run("3. Ý kiến nhận xét của Cán bộ chấm thi:")
+    r.font.bold = True
+
+    comments = [
+        "a) Về tính cấp thiết, mục tiêu và phạm vi đề tài:",
+        "........................................................................................................................................................................................................",
+        "b) Về chất lượng quyển báo cáo (bố cục, hình thức, phương trình, trích dẫn học thuật):",
+        "........................................................................................................................................................................................................",
+        "c) Về kết quả thiết kế mạch điện, sơ đồ khối và giải quyết các bài toán phần cứng thực tế:",
+        "........................................................................................................................................................................................................",
+        "d) Về chất lượng lập trình vi điều khiển STM32 FreeRTOS và phân hệ IoT ESP32:",
+        "........................................................................................................................................................................................................",
+        "e) Về kết quả vận hành mô hình thực tế (Demonstration) và trả lời câu hỏi vấn đáp (Q&A):",
+        "........................................................................................................................................................................................................"
+    ]
+    for c_line in comments:
+        p_c = doc.add_paragraph()
+        p_c.paragraph_format.space_before = Pt(2)
+        p_c.paragraph_format.space_after = Pt(2)
+        r = p_c.add_run(c_line)
+        r.font.name = 'Times New Roman'
+        r.font.size = Pt(11.5)
+        if c_line.startswith(("a)", "b)", "c)", "d)", "e)")):
+            r.font.bold = True
+
+    # Final Score Table
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(10)
+    p.paragraph_format.space_after = Pt(4)
+    r = p.add_run("4. Bảng tổng hợp điểm số đánh giá:")
+    r.font.bold = True
+
+    score_tbl_data = [
+        ("TT", "Hạng mục đánh giá theo Rubric", "Điểm tối đa", "Điểm CB1", "Điểm CB2", "Điểm Thống nhất"),
+        ("1", "File báo cáo kỹ thuật (Final Report)", "1.0", "", "", ""),
+        ("2", "Độ phức tạp đề tài (Project Complexity - có ESP32)", "3.0", "", "", ""),
+        ("3", "Thuyết trình & bố cục slide (Presentation)", "1.0", "", "", ""),
+        ("4", "Sơ đồ khối hệ thống (Block Diagram)", "0.5", "", "", ""),
+        ("5", "Phân tích mạch điện & lắp ráp (Circuit Analysis)", "0.5", "", "", ""),
+        ("6", "Lưu đồ thuật toán (Flowchart)", "0.5", "", "", ""),
+        ("7", "Phân tích mã nguồn C & Firmware (Source Code)", "0.5", "", "", ""),
+        ("8", "Trình diễn mô hình thực tế (Demonstration)", "1.0", "", "", ""),
+        ("9", "Vấn đáp cá nhân chuyên sâu (Q&A Defense)", "3.0", "", "", ""),
+        ("", "TỔNG ĐIỂM ĐỒ ÁN (THANG ĐIỂM 10.0)", "10.0", "", "", "")
+    ]
+
+    tbl_s = doc.add_table(rows=len(score_tbl_data), cols=6)
+    tbl_s.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(tbl_s, color="707070", sz="4", val="single")
+
+    w_cols = [Cm(1.0), Cm(6.5), Cm(2.2), Cm(2.0), Cm(2.0), Cm(2.5)]
+    for r_idx, row in enumerate(score_tbl_data):
+        for c_idx, val in enumerate(row):
+            cell = tbl_s.cell(r_idx, c_idx)
+            cell.width = w_cols[c_idx]
+            set_cell_margins(cell, top=70, bottom=70, left=80, right=80)
+            p_c = cell.paragraphs[0]
+            p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER if c_idx != 1 else WD_ALIGN_PARAGRAPH.LEFT
+            r = p_c.add_run(val)
+            r.font.name = 'Times New Roman'
+            r.font.size = Pt(10)
+            if r_idx == 0 or r_idx == len(score_tbl_data) - 1:
+                r.font.bold = True
+            if r_idx == 0:
+                set_cell_background(cell, "EAEAEA")
+            elif r_idx == len(score_tbl_data) - 1:
+                set_cell_background(cell, "F0F0F0")
+
+    # Dual Signature Box
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(20)
+    p.paragraph_format.space_after = Pt(0)
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    
+    sig_tbl = doc.add_table(rows=1, cols=2)
+    sig_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    cell_l = sig_tbl.cell(0, 0)
+    cell_r = sig_tbl.cell(0, 1)
+    cell_l.width = Cm(8.0)
+    cell_r.width = Cm(8.0)
+
+    p_l = cell_l.paragraphs[0]
+    p_l.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r_l = p_l.add_run("CÁN BỘ CHẤM THI 1\n(Ký và ghi rõ họ tên)\n\n\n\n......................................................")
+    r_l.font.name = 'Times New Roman'
+    r_l.font.size = Pt(11.5)
+    r_l.font.bold = True
+
+    p_r = cell_r.paragraphs[0]
+    p_r.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r_r = p_r.add_run("CÁN BỘ CHẤM THI 2\n(Ký và ghi rõ họ tên)\n\n\n\n......................................................")
+    r_r.font.name = 'Times New Roman'
+    r_r.font.size = Pt(11.5)
+    r_r.font.bold = True
+
+def build_report():
+    doc = Document()
+
+    # SECTION 1: Outer & Inner Cover Pages
+    add_front_cover_page(doc)
+
+    # SECTION 2: Front Matter (Assignment, Declaration, Thanks, Abstract)
+    add_assignment_and_rubric_page(doc)
+    add_declaration_and_acknowledgments_page(doc)
+    add_abstract_page(doc)
+
+    # Set up Table of Contents & Lists as part of Front Matter
+    doc.add_page_break()
+
+    # SECTION 3: Main Body (From Chapter 1 onwards, page numbers restart at 1 decimal)
+    # We will read markdown file and split at "# CHƯƠNG 1"
     md_path = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\BAO_CAO_DO_AN_AQUATIC_GUARDIAN.md"
     with open(md_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
+    # Find where Chapter 1 starts
+    ch1_idx = 0
+    for idx, line in enumerate(lines):
+        if line.strip().startswith('# CHƯƠNG 1'):
+            ch1_idx = idx
+            break
+
+    front_toc_lines = lines[:ch1_idx]
+    main_body_lines = lines[ch1_idx:]
+
+    # Render Front Matter TOC lines in Section 2
+    render_markdown_lines(doc, front_toc_lines)
+
+    # Now create Section 3 for Main Body
+    sec3 = doc.add_section()
+    sec3.footer.is_linked_to_previous = False
+    sec3.top_margin = Cm(2.5)
+    sec3.bottom_margin = Cm(3.0)
+    sec3.left_margin = Cm(3.0)
+    sec3.right_margin = Cm(2.5)
+    sectPr3 = sec3._sectPr
+    pgNumType3 = parse_xml(f'<w:pgNumType {nsdecls("w")} w:start="1" w:fmt="decimal"/>')
+    sectPr3.append(pgNumType3)
+
+    footer3 = sec3.footer
+    f_p3 = footer3.paragraphs[0]
+    f_p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    f_run3 = f_p3.add_run()
+    f_run3.font.name = 'Times New Roman'
+    f_run3.font.size = Pt(11)
+    f_run3.font.color.rgb = RGBColor(0, 0, 0)
+    add_page_number(f_run3)
+
+    # Render Main Body lines in Section 3
+    render_markdown_lines(doc, main_body_lines)
+
+    # SECTION 4: Final Teacher Review Sheet at the very end
+    add_teacher_review_sheet(doc)
+
+    # Save Word document
+    out_docx = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\BAO_CAO_DO_AN_AQUATIC_GUARDIAN.docx"
+    doc.save(out_docx)
+    print(f"[SUCCESS] Complete academic report saved to: {out_docx}")
+
+    # Export directly to PDF via Word COM Automation
+    export_to_pdf(out_docx)
+
+def render_markdown_lines(doc, lines):
+    """Renders a block of markdown lines into a docx document."""
     in_table = False
     table_lines = []
-
     in_code = False
     code_lines = []
-
     in_quote = False
     quote_lines = []
-    
+
     for line in lines:
         raw = line.rstrip('\r\n')
         stripped = raw.strip()
@@ -326,7 +886,7 @@ def build_report():
             code_lines.append(raw)
             continue
 
-        # Handle Blockquotes (starts with >)
+        # Handle Blockquotes
         if stripped.startswith('>'):
             in_quote = True
             quote_text = stripped[1:].strip()
@@ -338,10 +898,9 @@ def build_report():
             add_callout_box(doc, quote_lines)
             quote_lines = []
 
-        # Handle Dedicated Formula Lines (delimited by $$ ... $$)
+        # Handle Dedicated Formula Lines ($$ ... $$)
         if stripped.startswith('$$') and stripped.endswith('$$'):
             content = stripped[2:-2].strip()
-            # Extract trailing equation tag like (2.1), (3.1), etc.
             eq_match = re.search(r'\(([0-9]+\.[0-9]+)\)\s*$', content)
             if eq_match:
                 eq_num = f"({eq_match.group(1)})"
@@ -368,7 +927,7 @@ def build_report():
         if stripped == '---':
             continue
 
-        # Heading 1: Chapters & Front Matter (# Title) - Colorless Pure Black
+        # Heading 1: Chapters & Front Matter
         if raw.startswith('# '):
             text = raw[2:].strip()
             p = doc.add_paragraph()
@@ -380,9 +939,9 @@ def build_report():
             run.font.name = 'Times New Roman'
             run.font.size = Pt(16)
             run.font.bold = True
-            run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
+            run.font.color.rgb = RGBColor(0, 0, 0)
 
-        # Heading 2: Level 1 Sections (## 1.1 ...) - Pure Black
+        # Heading 2: Level 1 Sections
         elif raw.startswith('## '):
             text = raw[3:].strip()
             p = doc.add_paragraph()
@@ -394,9 +953,9 @@ def build_report():
             run.font.name = 'Times New Roman'
             run.font.size = Pt(14)
             run.font.bold = True
-            run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
+            run.font.color.rgb = RGBColor(0, 0, 0)
 
-        # Heading 3: Level 2 Subsections (### 1.1.1 ...) - Pure Black
+        # Heading 3: Level 2 Subsections
         elif raw.startswith('### '):
             text = raw[4:].strip()
             p = doc.add_paragraph()
@@ -408,9 +967,9 @@ def build_report():
             run.font.name = 'Times New Roman'
             run.font.size = Pt(13)
             run.font.bold = True
-            run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
+            run.font.color.rgb = RGBColor(0, 0, 0)
 
-        # Table Captions (starts with *Bảng...)
+        # Table Captions
         elif stripped.startswith('*Bảng ') or stripped.startswith('Bảng '):
             clean_text = stripped.replace('*', '')
             p = doc.add_paragraph()
@@ -424,7 +983,7 @@ def build_report():
             run.font.bold = True
             run.font.color.rgb = RGBColor(0, 0, 0)
 
-        # Figure Captions (starts with *Hình...)
+        # Figure Captions
         elif stripped.startswith('*Hình ') or stripped.startswith('Hình '):
             clean_text = stripped.replace('*', '')
             p = doc.add_paragraph()
@@ -467,22 +1026,13 @@ def build_report():
             p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
             format_inline_markdown(p, text)
 
-    # Flush any trailing table, quote, or code
+    # Flush remaining
     if in_table and table_lines:
         process_markdown_table(doc, table_lines)
     if in_code and code_lines:
         add_code_block(doc, code_lines)
     if in_quote and quote_lines:
         add_callout_box(doc, quote_lines)
-
-    out_docx = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\BAO_CAO_DO_AN_AQUATIC_GUARDIAN.docx"
-    try:
-        doc.save(out_docx)
-        print(f"[SUCCESS] High-fidelity monochrome report saved to: {out_docx}")
-    except PermissionError:
-        alt_docx = r"E:\AntiGravityRoot\mcp201-aquatic-guardian\BAO_CAO_DO_AN_AQUATIC_GUARDIAN_v2.docx"
-        doc.save(alt_docx)
-        print(f"[WARNING] '{out_docx}' is locked by Word. Saved to: {alt_docx}")
 
 def format_inline_markdown(p, text):
     """Parses markdown links, bold, italic, and code spans in black/colorless style."""
@@ -528,7 +1078,7 @@ def format_inline_spans(p, text):
                 run.font.size = Pt(11.5) if is_code else Pt(13)
                 run.font.bold = is_bold
                 run.font.italic = is_italic
-                run.font.color.rgb = RGBColor(0, 0, 0) # Strict Black (Colorless)
+                run.font.color.rgb = RGBColor(0, 0, 0)
 
 def process_markdown_table(doc, lines):
     """Converts markdown table lines into a styled monochrome Word table."""
@@ -551,10 +1101,9 @@ def process_markdown_table(doc, lines):
     table.autofit = True
     set_table_borders(table, color="707070", sz="4", val="single")
 
-    # Style header row (Light neutral gray fill + Bold Black text)
     for col_idx, text in enumerate(rows_data[0]):
         cell = table.cell(0, col_idx)
-        set_cell_background(cell, "EAEAEA") # Neutral Light Gray (Prints clean)
+        set_cell_background(cell, "EAEAEA")
         set_cell_margins(cell, top=120, bottom=120, left=150, right=150)
         p = cell.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -564,15 +1113,14 @@ def process_markdown_table(doc, lines):
         run.font.name = 'Times New Roman'
         run.font.size = Pt(11)
         run.font.bold = True
-        run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
+        run.font.color.rgb = RGBColor(0, 0, 0)
 
-    # Style data rows (Clean white background, no colored stripes)
     for row_idx in range(1, num_rows):
         r_data = rows_data[row_idx]
         for col_idx in range(num_cols):
             cell = table.cell(row_idx, col_idx)
             val = r_data[col_idx] if col_idx < len(r_data) else ""
-            set_cell_background(cell, "FFFFFF") # Clean White (Colorless)
+            set_cell_background(cell, "FFFFFF")
             set_cell_margins(cell, top=100, bottom=100, left=140, right=140)
             p = cell.paragraphs[0]
             p.paragraph_format.space_before = Pt(2)
@@ -582,12 +1130,38 @@ def process_markdown_table(doc, lines):
             format_inline_markdown(p, val)
             for r in p.runs:
                 r.font.size = Pt(11)
-                r.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
+                r.font.color.rgb = RGBColor(0, 0, 0)
 
-    # Add spacing after table
     p_spacer = doc.add_paragraph()
     p_spacer.paragraph_format.space_before = Pt(0)
     p_spacer.paragraph_format.space_after = Pt(8)
+
+def export_to_pdf(docx_path):
+    """Exports docx to pdf using Microsoft Word COM Automation."""
+    pdf_path = os.path.abspath(docx_path.replace('.docx', '.pdf'))
+    new_pdf_path = os.path.abspath(docx_path.replace('.docx', '_NEW.pdf'))
+    word = None
+    try:
+        import win32com.client
+        word = win32com.client.Dispatch('Word.Application')
+        word.Visible = False
+        doc = word.Documents.Open(os.path.abspath(docx_path))
+        try:
+            doc.SaveAs(pdf_path, FileFormat=17) # 17 = wdFormatPDF
+            print(f"[SUCCESS] Official PDF report generated at: {pdf_path}")
+        except Exception as e_lock:
+            print(f"[NOTE] {pdf_path} is currently locked by a PDF viewer: {e_lock}")
+            doc.SaveAs(new_pdf_path, FileFormat=17)
+            print(f"[SUCCESS] Saved updated PDF to: {new_pdf_path}")
+        doc.Close()
+    except Exception as e:
+        print(f"[WARNING] Word COM PDF export encountered: {e}")
+    finally:
+        if word:
+            try:
+                word.Quit()
+            except Exception:
+                pass
 
 if __name__ == '__main__':
     build_report()
