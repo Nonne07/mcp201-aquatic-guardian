@@ -515,15 +515,7 @@ def add_assignment_and_rubric_page(doc):
             elif r_idx == len(rubric_data) - 1:
                 set_cell_background(cell, "F0F0F0")
 
-    # Signature lines
-    p = doc.add_paragraph()
-    p.paragraph_format.space_before = Pt(16)
-    p.paragraph_format.space_after = Pt(0)
-    p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    r = p.add_run("Ngày      tháng 11 năm 2026\nGIẢNG VIÊN HƯỚNG DẪN / CHẤM THI\n\n\n\n(Ký và ghi rõ họ tên)                      ")
-    r.font.name = 'Times New Roman'
-    r.font.size = Pt(11)
-    r.font.italic = True
+
 
 def add_declaration_and_acknowledgments_page(doc):
     """Builds the Student Declaration and Acknowledgments pages."""
